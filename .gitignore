@@ -1,0 +1,20 @@
+# ── Relatório técnico (não publicar) ──────────────────────
+relatorio_tecnico.docx
+
+# ── Python ────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+.venv/
+
+# ── Sistemas operacionais ─────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDEs ──────────────────────────────────────────────────
+.vscode/
+.idea/
+*.code-workspace
