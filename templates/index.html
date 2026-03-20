@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Clash Royale Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0d1a;--surface:#111827;--surface2:#1a2235;--border:#2a3a5c;
+  --gold:#f5c842;--gold2:#e0a820;--blue:#3b82f6;--blue2:#1d4ed8;
+  --red:#ef4444;--green:#22c55e;--purple:#a855f7;--text:#e8eaf6;--muted:#7a8aaa;
+  --radius:12px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;
+  background-image:radial-gradient(ellipse at 20% 20%,rgba(59,130,246,.08) 0%,transparent 50%),
+  radial-gradient(ellipse at 80% 80%,rgba(168,85,247,.06) 0%,transparent 50%);}
+
+.header{background:linear-gradient(135deg,#0d1b3e,#1a1040);border-bottom:2px solid var(--gold);
+  padding:18px 24px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(0,0,0,.5);}
+.logo{width:46px;height:46px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:12px;
+  display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 12px rgba(245,200,66,.4);}
+.header-title{font-family:'Cinzel',serif;font-size:20px;font-weight:900;color:var(--gold);
+  text-shadow:0 0 20px rgba(245,200,66,.5);letter-spacing:1px;}
+.header-sub{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-top:2px;}
+
+.main{max-width:1000px;margin:0 auto;padding:24px 16px;}
+
+.api-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 18px;margin-bottom:16px;display:flex;gap:10px;align-items:center;}
+.api-label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);white-space:nowrap;font-weight:700;}
+.input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;
+  padding:9px 14px;color:var(--text);font-family:'Nunito',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+.input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,.15);}
+.input::placeholder{color:var(--muted);}
+
+.info-note{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:8px;
+  padding:10px 14px;font-size:12px;color:#93c5fd;margin-bottom:16px;line-height:1.6;}
+
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:6px;margin-bottom:20px;}
+.tab{flex:1;padding:10px 16px;border:none;border-radius:8px;background:transparent;
+  color:var(--muted);cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;
+  transition:all .2s;text-transform:uppercase;letter-spacing:.5px;}
+.tab.active{background:linear-gradient(135deg,var(--blue2),var(--blue));color:#fff;
+  box-shadow:0 4px 12px rgba(59,130,246,.35);}
+.tab:hover:not(.active){background:var(--surface2);color:var(--text);}
+
+.search-bar{display:flex;gap:10px;margin-bottom:8px;}
+.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-family:'Nunito',sans-serif;
+  font-weight:700;font-size:13px;transition:all .2s;display:flex;align-items:center;gap:6px;
+  text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+.btn-primary{background:linear-gradient(135deg,#f5c842,#e0a820);color:#0a0d1a;
+  box-shadow:0 4px 12px rgba(245,200,66,.3);}
+.btn-primary:hover{transform:translateY(-1px);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-dl-json{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;font-size:12px;padding:8px 14px;}
+.btn-dl-json:hover{transform:translateY(-1px);}
+.btn-dl-csv{background:linear-gradient(135deg,#15803d,#22c55e);color:#fff;font-size:12px;padding:8px 14px;}
+.btn-dl-csv:hover{transform:translateY(-1px);}
+
+.download-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+  background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 16px;margin-bottom:16px;}
+.download-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
+
+.tag-hint{font-size:11px;color:var(--muted);margin-bottom:16px;}
+.error-box{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);border-radius:8px;
+  padding:12px 16px;color:#fca5a5;font-size:13px;margin-bottom:16px;}
+.spinner-wrap{display:flex;justify-content:center;padding:48px;}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--gold);
+  border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px;}
+.card-header{background:linear-gradient(135deg,var(--surface2),rgba(59,130,246,.08));
+  border-bottom:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.card-title{font-family:'Cinzel',serif;font-size:13px;font-weight:600;color:var(--gold);letter-spacing:.5px;}
+.card-body{padding:18px;}
+
+.hero{background:linear-gradient(135deg,#0d1b3e,#1a1040);border:1px solid var(--border);
+  border-radius:var(--radius);padding:22px;margin-bottom:16px;display:flex;gap:20px;align-items:center;}
+.hero-avatar{width:72px;height:72px;background:linear-gradient(135deg,var(--blue2),var(--purple));
+  border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:32px;
+  box-shadow:0 8px 24px rgba(59,130,246,.3);flex-shrink:0;border:2px solid rgba(255,255,255,.15);}
+.hero-name{font-family:'Cinzel',serif;font-size:20px;font-weight:900;margin-bottom:4px;}
+.hero-tag{font-size:12px;color:var(--muted);margin-bottom:10px;font-family:monospace;letter-spacing:1px;}
+.stat-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.badge-gold{background:rgba(245,200,66,.15);color:var(--gold);border:1px solid rgba(245,200,66,.3);}
+.badge-blue{background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3);}
+.badge-green{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);}
+.badge-red{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3);}
+.badge-purple{background:rgba(168,85,247,.15);color:#c084fc;border:1px solid rgba(168,85,247,.3);}
+.badge-orange{background:rgba(251,146,60,.15);color:#fb923c;border:1px solid rgba(251,146,60,.3);}
+.badge-gray{background:rgba(122,138,170,.15);color:var(--muted);border:1px solid rgba(122,138,170,.3);}
+
+.sub-tabs{display:flex;gap:4px;background:var(--surface2);border-radius:8px;padding:4px;
+  margin-bottom:14px;border:1px solid var(--border);overflow-x:auto;}
+.sub-tab{padding:7px 14px;border:none;border-radius:6px;background:transparent;color:var(--muted);
+  cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;font-size:12px;transition:all .2s;
+  white-space:nowrap;text-transform:uppercase;letter-spacing:.5px;}
+.sub-tab.active{background:var(--surface);color:var(--gold);box-shadow:0 2px 8px rgba(0,0,0,.3);}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+@media(max-width:700px){.grid2,.grid3,.grid4{grid-template-columns:1fr 1fr}.hero{flex-direction:column;text-align:center}}
+@media(max-width:400px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+
+.stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;}
+.stat-value{font-family:'Cinzel',serif;font-size:22px;font-weight:900;margin-bottom:4px;}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+
+/* ── BATTLE CARDS ── */
+.battle-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:12px 14px;margin-bottom:8px;display:grid;grid-template-columns:auto 1fr auto;
+  gap:12px;align-items:center;transition:border-color .2s;}
+.battle-item:hover{border-color:var(--blue);}
+.result-box{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;
+  justify-content:center;font-size:11px;font-weight:700;text-transform:uppercase;}
+.result-box.win{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);}
+.result-box.loss{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3);}
+.result-box.draw{background:rgba(122,138,170,.15);color:var(--muted);border:1px solid rgba(122,138,170,.3);}
+.crowns{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:700;}
+
+/* ── WAR BATTLE CARDS ── */
+.war-battle{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  margin-bottom:10px;overflow:hidden;transition:border-color .2s;}
+.war-battle:hover{border-color:rgba(168,85,247,.5);}
+.war-battle-header{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;
+  padding:12px 14px;cursor:pointer;}
+.war-battle-body{padding:0 14px 14px;border-top:1px solid rgba(42,58,92,.5);}
+.war-battle-body.hidden{display:none;}
+
+.deck-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px;}
+@media(max-width:500px){.deck-grid{grid-template-columns:repeat(2,1fr)}}
+.deck-card{background:var(--bg);border:1px solid var(--border);border-radius:6px;
+  padding:6px 8px;text-align:center;font-size:11px;line-height:1.3;}
+.deck-card-name{font-weight:700;color:var(--text);margin-bottom:2px;}
+.deck-card-lvl{color:var(--gold);font-size:10px;}
+.deck-card-elixir{color:#60a5fa;font-size:10px;}
+
+.war-section{margin-bottom:20px;}
+.war-section-title{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--gold);
+  letter-spacing:.5px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;}
+
+/* ── FILTER BAR ── */
+.filter-bar{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:14px 18px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+.filter-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
+.period-btn{padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:transparent;
+  color:var(--muted);cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;font-size:11px;
+  transition:all .2s;text-transform:uppercase;letter-spacing:.5px;}
+.period-btn.active{background:rgba(245,200,66,.15);color:var(--gold);border-color:var(--gold);}
+.period-btn:hover:not(.active){background:var(--surface2);color:var(--text);}
+.date-input{background:var(--bg);border:1px solid var(--border);border-radius:8px;
+  padding:6px 10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:12px;outline:none;}
+.date-input:focus{border-color:var(--blue);}
+
+/* ── CHARTS ── */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:700px){.chart-grid{grid-template-columns:1fr}}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.chart-card.full{grid-column:1/-1;}
+.chart-header{background:linear-gradient(135deg,var(--surface2),rgba(59,130,246,.06));
+  border-bottom:1px solid var(--border);padding:10px 16px;}
+.chart-title{font-family:'Cinzel',serif;font-size:12px;font-weight:600;color:var(--gold);}
+.chart-body{padding:16px;}
+.chart-wrap{position:relative;height:220px;}
+.chart-wrap.tall{height:280px;}
+
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+@media(max-width:700px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;}
+.kpi-val{font-family:'Cinzel',serif;font-size:20px;font-weight:900;margin-bottom:2px;}
+.kpi-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+
+/* ── WAR SUMMARY TABLE ── */
+.summary-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;}
+.summary-table th{text-align:left;padding:7px 10px;color:var(--muted);text-transform:uppercase;
+  font-size:10px;letter-spacing:.5px;border-bottom:1px solid var(--border);}
+.summary-table td{padding:8px 10px;border-bottom:1px solid rgba(42,58,92,.3);}
+.summary-table tr:last-child td{border-bottom:none;}
+.summary-table tr:hover td{background:rgba(42,58,92,.2);}
+
+.member-row{display:grid;grid-template-columns:28px 1fr auto auto;gap:10px;align-items:center;
+  padding:9px 14px;border-bottom:1px solid rgba(42,58,92,.4);transition:background .15s;}
+.member-row:last-child{border-bottom:none;}
+.member-row:hover{background:var(--surface2);}
+.member-rank{font-size:11px;color:var(--muted);font-weight:700;text-align:center;}
+.member-name{font-size:13px;font-weight:700;}
+.member-tag{font-size:11px;color:var(--muted);font-family:monospace;}
+.member-trophies{font-weight:700;font-size:13px;display:flex;align-items:center;gap:4px;}
+
+.race-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;}
+.race-title{font-family:'Cinzel',serif;font-size:13px;font-weight:600;color:var(--gold);margin-bottom:10px;}
+.war-table{width:100%;border-collapse:collapse;font-size:12px;}
+.war-table th{text-align:left;padding:6px 8px;color:var(--muted);text-transform:uppercase;
+  font-size:10px;letter-spacing:.5px;border-bottom:1px solid var(--border);}
+.war-table td{padding:8px;border-bottom:1px solid rgba(42,58,92,.3);}
+.war-table tr:last-child td{border-bottom:none;}
+.war-table tr.highlight td{background:rgba(245,200,66,.05);}
+
+hr{border:none;border-top:1px solid var(--border);margin:14px 0;}
+.empty{text-align:center;padding:36px;color:var(--muted);}
+.empty .icon{font-size:42px;margin-bottom:10px;}
+.hidden{display:none!important;}
+
+/* ── PROGRESS BAR ── */
+.prog-bar-bg{background:rgba(42,58,92,.6);border-radius:4px;height:6px;margin-top:4px;}
+.prog-bar{height:6px;border-radius:4px;transition:width .5s;}
+
+/* ── ELIXIR DOT ── */
+.elixir-dot{display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:#a855f7;margin-right:3px;vertical-align:middle;}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">⚔️</div>
+  <div>
+    <div class="header-title">Clash Royale Tracker</div>
+    <div class="header-sub">Histórico de Jogadores &amp; Clãs</div>
+  </div>
+</header>
+
+<div class="main">
+  <div class="api-card">
+    <span class="api-label">🔑 API Key</span>
+    <input class="input" id="apiKey" type="password" placeholder="Cole sua chave da API do Clash Royale..."/>
+    <a href="https://developer.clashroyale.com/" target="_blank"
+       style="font-size:11px;color:#60a5fa;white-space:nowrap;text-decoration:none;">Obter chave →</a>
+  </div>
+  <div class="info-note">
+    💡 Crie sua chave em <strong>developer.clashroyale.com</strong> usando seu <strong>IP público</strong>
+    (consulte em <a href="https://meuip.com.br" target="_blank" style="color:#60a5fa">meuip.com.br</a>).
+    Tags: <code>#2PP</code>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('player')">👤 Jogador</button>
+    <button class="tab"        onclick="switchTab('clan')">🏰 Clã</button>
+  </div>
+  <div class="error-box hidden" id="errorBox"></div>
+
+  <!-- ═══════════════════════ JOGADOR ═══════════════════════ -->
+  <div id="tabPlayer">
+    <div class="search-bar">
+      <input class="input" id="playerTag" placeholder="Tag do jogador (ex: #2PP)"
+             onkeydown="if(event.key==='Enter')searchPlayer()"/>
+      <button class="btn btn-primary" id="btnPlayer" onclick="searchPlayer()">🔍 Buscar</button>
+    </div>
+    <div class="tag-hint">💡 A tag está no perfil do jogador dentro do jogo</div>
+    <div class="spinner-wrap hidden" id="spinnerPlayer"><div class="spinner"></div></div>
+
+    <div id="playerResult" class="hidden">
+      <div class="download-bar">
+        <span class="download-label">⬇️ Baixar dados:</span>
+        <button class="btn btn-dl-json" onclick="downloadPlayer('json')">📄 JSON</button>
+        <button class="btn btn-dl-csv"  onclick="downloadPlayer('csv')">📊 CSV</button>
+      </div>
+
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-avatar">👑</div>
+        <div style="flex:1;min-width:0">
+          <div class="hero-name" id="pName"></div>
+          <div class="hero-tag"  id="pTag"></div>
+          <div class="stat-row">
+            <div id="pTrophies"></div>
+            <div id="pBest"></div>
+            <span class="badge badge-blue" id="pLevel"></span>
+            <span id="pClanBadge"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sub-tabs">
+        <button class="sub-tab active"  onclick="switchPlayerTab('profile')">📊 Perfil</button>
+        <button class="sub-tab" id="btnBattles"      onclick="switchPlayerTab('battles')">⚔️ Batalhas</button>
+        <button class="sub-tab" id="btnWars"         onclick="switchPlayerTab('wars')">🏴 Guerras</button>
+        <button class="sub-tab" id="btnTournaments"  onclick="switchPlayerTab('tournaments')">🏆 Torneios</button>
+        <button class="sub-tab" id="btnPlayerCharts" onclick="switchPlayerTab('charts')">📈 Gráficos</button>
+      </div>
+
+      <div id="ptProfile"><div class="grid2" id="pStats"></div><div id="pClanCard"></div></div>
+
+      <div id="ptBattles" class="hidden">
+        <div class="card">
+          <div class="card-header"><span>⚔️</span><span class="card-title">Batalhas Recentes</span></div>
+          <div class="card-body" style="padding:10px" id="listBattles"></div>
+        </div>
+      </div>
+
+      <!-- ══ GUERRAS — SEÇÃO DETALHADA ══ -->
+      <div id="ptWars" class="hidden">
+        <div id="warContent"></div>
+      </div>
+
+      <div id="ptTournaments" class="hidden">
+        <div class="card">
+          <div class="card-header"><span>🏆</span><span class="card-title">Torneios &amp; Desafios</span></div>
+          <div class="card-body" style="padding:10px" id="listTournaments"></div>
+        </div>
+      </div>
+
+      <!-- Gráficos Jogador -->
+      <div id="ptCharts" class="hidden">
+        <div class="filter-bar">
+          <span class="filter-label">📅 Período:</span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="period-btn active" onclick="setPlayerPeriod(7,this)">7 dias</button>
+            <button class="period-btn" onclick="setPlayerPeriod(15,this)">15 dias</button>
+            <button class="period-btn" onclick="setPlayerPeriod(30,this)">30 dias</button>
+            <button class="period-btn" onclick="setPlayerPeriod(90,this)">90 dias</button>
+            <button class="period-btn" onclick="setPlayerPeriod(0,this)">Tudo</button>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;margin-left:auto;flex-wrap:wrap">
+            <span class="filter-label">Personalizado:</span>
+            <input type="date" class="date-input" id="pDateFrom" onchange="applyPlayerCustomRange()"/>
+            <span style="color:var(--muted);font-size:12px">até</span>
+            <input type="date" class="date-input" id="pDateTo"   onchange="applyPlayerCustomRange()"/>
+          </div>
+        </div>
+        <div class="kpi-row" id="pKpis"></div>
+        <div class="chart-grid">
+          <div class="chart-card full">
+            <div class="chart-header"><span class="chart-title">🏆 Troféus nas Batalhas ao Longo do Tempo</span></div>
+            <div class="chart-body"><div class="chart-wrap tall"><canvas id="chartTrophies"></canvas></div></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header"><span class="chart-title">✅ Resultados no Período</span></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartResults"></canvas></div></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header"><span class="chart-title">👑 Coroas por Dia</span></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartCrowns"></canvas></div></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header"><span class="chart-title">🗂️ Batalhas por Tipo</span></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartTypes"></canvas></div></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header"><span class="chart-title">🏟️ Taxa de Vitória por Arena</span></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartArena"></canvas></div></div>
+          </div>
+          <div class="chart-card full">
+            <div class="chart-header"><span class="chart-title">📆 Batalhas por Dia da Semana</span></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartWeekday"></canvas></div></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /playerResult -->
+  </div><!-- /tabPlayer -->
+
+  <!-- ═══════════════════════ CLÃ ═══════════════════════ -->
+  <div id="tabClan" class="hidden">
+    <div class="search-bar">
+      <input class="input" id="clanTag" placeholder="Tag do clã (ex: #2PP)"
+             onkeydown="if(event.key==='Enter')searchClan()"/>
+      <button class="btn btn-primary" id="btnClan" onclick="searchClan()">🔍 Buscar</button>
+    </div>
+    <div class="tag-hint">💡 A tag do clã está na tela do clã dentro do jogo</div>
+    <div class="spinner-wrap hidden" id="spinnerClan"><div class="spinner"></div></div>
+
+    <div id="clanResult" class="hidden">
+      <div class="download-bar">
+        <span class="download-label">⬇️ Baixar dados:</span>
+        <button class="btn btn-dl-json" onclick="downloadClan('json')">📄 JSON</button>
+        <button class="btn btn-dl-csv"  onclick="downloadClan('csv')">📊 CSV</button>
+      </div>
+      <div class="hero">
+        <div class="hero-avatar" style="background:linear-gradient(135deg,#7c3aed,#4f46e5)">🏰</div>
+        <div style="flex:1;min-width:0">
+          <div class="hero-name" id="cName"></div>
+          <div class="hero-tag"  id="cTag"></div>
+          <div id="cDesc" style="font-size:12px;color:var(--muted);margin-bottom:10px;"></div>
+          <div class="stat-row">
+            <div id="cScore"></div>
+            <span class="badge badge-blue"  id="cMembers"></span>
+            <span class="badge badge-green" id="cWarTrophies"></span>
+          </div>
+        </div>
+      </div>
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="switchClanTab('info')">🏰 Visão Geral</button>
+        <button class="sub-tab" id="btnMembers"    onclick="switchClanTab('members')">👥 Membros</button>
+        <button class="sub-tab" id="btnWarLog"     onclick="switchClanTab('wars')">⚓ Guerras</button>
+        <button class="sub-tab" id="btnClanCharts" onclick="switchClanTab('charts')">📈 Gráficos</button>
+      </div>
+      <div id="ctInfo"></div>
+      <div id="ctMembers" class="hidden"></div>
+      <div id="ctWars"    class="hidden"></div>
+      <div id="ctCharts"  class="hidden">
+        <div class="filter-bar">
+          <span class="filter-label">⚓ Temporadas:</span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="period-btn active" onclick="setClanPeriod(5,this)">Últimas 5</button>
+            <button class="period-btn" onclick="setClanPeriod(10,this)">Últimas 10</button>
+            <button class="period-btn" onclick="setClanPeriod(20,this)">Últimas 20</button>
+            <button class="period-btn" onclick="setClanPeriod(0,this)">Todas</button>
+          </div>
+        </div>
+        <div class="kpi-row" id="cKpis"></div>
+        <div class="chart-grid">
+          <div class="chart-card full">
+            <div class="chart-header"><span class="chart-title">⚓ Fama do Clã por Temporada</span></div>
+            <div class="chart-body"><div class="chart-wrap tall"><canvas id="chartClanFame"></canvas></div></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header"><span class="chart-title">🏅 Posição por Temporada</span></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartClanRank"></canvas></div></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header"><span class="chart-title">👥 Participantes por Temporada</span></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartClanParticipants"></canvas></div></div>
+          </div>
+          <div class="chart-card full">
+            <div class="chart-header"><span class="chart-title">🏆 Distribuição de Troféus dos Membros</span></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartMemberTrophies"></canvas></div></div>
+          </div>
+          <div class="chart-card full">
+            <div class="chart-header"><span class="chart-title">🌟 Top 15 Contribuidores de Fama</span></div>
+            <div class="chart-body"><div class="chart-wrap tall"><canvas id="chartTopContrib"></canvas></div></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header"><span class="chart-title">🎁 Top 10 Doadores</span></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartDonations"></canvas></div></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header"><span class="chart-title">📊 Membros por Cargo</span></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartRoles"></canvas></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════════════════════
+// GLOBALS
+// ══════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id)
+let currentPlayerTag='', currentClanTag=''
+let allBattleLog=[], allWarLog=[], allMembers=[], currentClanData={}
+let playerPeriodDays=7, clanPeriodCount=5
+const chartInstances={}
+
+Chart.defaults.color='#7a8aaa'
+Chart.defaults.borderColor='#2a3a5c'
+Chart.defaults.font.family="'Nunito', sans-serif"
+Chart.defaults.plugins.legend.labels.padding=14
+Chart.defaults.plugins.legend.labels.usePointStyle=true
+const PALETTE=['#f5c842','#3b82f6','#22c55e','#ef4444','#a855f7','#fb923c','#06b6d4','#ec4899']
+const WEEKDAYS=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']
+const ROLES={leader:'Líder',coLeader:'Co-Líder',elder:'Ancião',member:'Membro'}
+
+// ── UTILS ──────────────────────────────────────────────
+function apiKey(){ return $('apiKey').value.trim() }
+function trophyColor(t){ return t>=7000?'#ff4da6':t>=5000?'#ffd700':t>=3000?'#c0c0c0':'#cd7f32' }
+function fmtDate(ts){
+  const s=String(ts); if(s.length<8) return s
+  const h=s.length>9?s.slice(9,11):'00', m=s.length>11?s.slice(11,13):'00'
+  return `${s.slice(6,8)}/${s.slice(4,6)}/${s.slice(0,4)} ${h}:${m}`
+}
+function parseTs(ts){
+  const s=String(ts); if(s.length<8) return null
+  return new Date(`${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}T${s.length>9?s.slice(9,11):'00'}:${s.length>11?s.slice(11,13):'00'}:00`)
+}
+function showError(msg){const el=$('errorBox');el.textContent='⚠️ '+msg;el.classList.remove('hidden')}
+function clearError(){$('errorBox').classList.add('hidden')}
+async function apiFetch(url){
+  const res=await fetch(url,{headers:{'X-Api-Key':apiKey()}})
+  const data=await res.json()
+  if(!res.ok) throw new Error(data.message||`Erro ${res.status}`)
+  return data
+}
+function destroyChart(id){if(chartInstances[id]){chartInstances[id].destroy();delete chartInstances[id]}}
+function emptyState(icon,msg){return `<div class="empty"><div class="icon">${icon}</div><p>${msg}</p></div>`}
+
+// ── DOWNLOADS ──────────────────────────────────────────
+function downloadPlayer(fmt){
+  if(!currentPlayerTag){showError('Pesquise um jogador primeiro.');return}
+  if(!apiKey()){showError('Insira sua chave de API.');return}
+  window.location.href=`/download/player/${currentPlayerTag.replace(/^#/,'')}/${fmt}?key=${encodeURIComponent(apiKey())}`
+}
+function downloadClan(fmt){
+  if(!currentClanTag){showError('Pesquise um clã primeiro.');return}
+  if(!apiKey()){showError('Insira sua chave de API.');return}
+  window.location.href=`/download/clan/${currentClanTag.replace(/^#/,'')}/${fmt}?key=${encodeURIComponent(apiKey())}`
+}
+
+// ── TABS ──────────────────────────────────────────────
+function switchTab(tab){
+  $('tabPlayer').classList.toggle('hidden',tab!=='player')
+  $('tabClan').classList.toggle('hidden',  tab!=='clan')
+  clearError()
+  document.querySelectorAll('.tabs .tab').forEach((el,i)=>{
+    el.classList.toggle('active',(tab==='player'&&i===0)||(tab==='clan'&&i===1))
+  })
+}
+function switchPlayerTab(tab){
+  const tabs=['profile','battles','wars','tournaments','charts']
+  tabs.forEach(t=>$('pt'+t[0].toUpperCase()+t.slice(1)).classList.toggle('hidden',t!==tab))
+  document.querySelectorAll('#tabPlayer .sub-tab').forEach((el,i)=>el.classList.toggle('active',i===tabs.indexOf(tab)))
+  if(tab==='charts') renderPlayerCharts()
+}
+function switchClanTab(tab){
+  const tabs=['info','members','wars','charts']
+  tabs.forEach(t=>$('ct'+t[0].toUpperCase()+t.slice(1)).classList.toggle('hidden',t!==tab))
+  document.querySelectorAll('#tabClan .sub-tab').forEach((el,i)=>el.classList.toggle('active',i===tabs.indexOf(tab)))
+  if(tab==='charts') renderClanCharts()
+}
+
+// ── FILTROS PERÍODO JOGADOR ────────────────────────────
+function setPlayerPeriod(days,btn){
+  playerPeriodDays=days;$('pDateFrom').value='';$('pDateTo').value=''
+  document.querySelectorAll('#ptCharts .period-btn').forEach(b=>b.classList.remove('active'))
+  btn.classList.add('active');renderPlayerCharts()
+}
+function applyPlayerCustomRange(){
+  playerPeriodDays=-1
+  document.querySelectorAll('#ptCharts .period-btn').forEach(b=>b.classList.remove('active'))
+  renderPlayerCharts()
+}
+function filterBattlesByPeriod(battles){
+  const now=new Date()
+  const from=$('pDateFrom').value?new Date($('pDateFrom').value):null
+  const to  =$('pDateTo').value  ?new Date($('pDateTo').value+'T23:59:59'):null
+  return battles.filter(b=>{
+    const d=parseTs(b.battleTime); if(!d) return false
+    if(from&&to) return d>=from&&d<=to
+    if(playerPeriodDays<=0) return true
+    return d>=new Date(now-playerPeriodDays*86400000)
+  })
+}
+
+// ── FILTROS CLÃ ────────────────────────────────────────
+function setClanPeriod(n,btn){
+  clanPeriodCount=n
+  document.querySelectorAll('#ctCharts .period-btn').forEach(b=>b.classList.remove('active'))
+  btn.classList.add('active');renderClanCharts()
+}
+function filterWarlog(w){ return clanPeriodCount<=0?w:w.slice(0,clanPeriodCount) }
+
+// ══════════════════════════════════════════════════════════
+// BUSCA JOGADOR
+// ══════════════════════════════════════════════════════════
+async function searchPlayer(){
+  if(!apiKey()){showError('Insira sua chave de API.');return}
+  const tag=$('playerTag').value.trim().replace(/^#/,'')
+  if(!tag){showError('Insira a tag do jogador.');return}
+  clearError();$('playerResult').classList.add('hidden')
+  $('spinnerPlayer').classList.remove('hidden');$('btnPlayer').disabled=true
+  try{
+    const [p,blog]=await Promise.all([
+      apiFetch(`/api/player/${tag}`),
+      apiFetch(`/api/player/${tag}/battlelog`)
+    ])
+    allBattleLog=Array.isArray(blog)?blog:(blog.items||[])
+    currentPlayerTag=p.tag||('#'+tag)
+    renderPlayer(p,allBattleLog)
+    $('playerResult').classList.remove('hidden')
+    switchPlayerTab('profile')
+  }catch(e){showError('Erro ao buscar jogador: '+e.message)}
+  finally{$('spinnerPlayer').classList.add('hidden');$('btnPlayer').disabled=false}
+}
+
+function renderPlayer(p,blog){
+  $('pName').textContent   =p.name
+  $('pTag').textContent    =p.tag
+  $('pTrophies').innerHTML =`<span style="font-size:13px;font-weight:700;color:${trophyColor(p.trophies)}">🏆 ${(p.trophies||0).toLocaleString()} Troféus</span>`
+  $('pBest').innerHTML     =`<span style="font-size:13px;font-weight:700;color:#fbbf24">⭐ ${(p.bestTrophies||0).toLocaleString()} Máx.</span>`
+  $('pLevel').textContent  =`👑 Nível ${p.expLevel}`
+  $('pClanBadge').innerHTML=p.clan?`<span class="badge badge-purple">🏰 ${p.clan.name}</span>`:`<span class="badge badge-gray">Sem Clã</span>`
+
+  $('pStats').innerHTML=[
+    {v:p.trophies,l:'🏆 Troféus',c:trophyColor(p.trophies)},
+    {v:p.bestTrophies,l:'⭐ Melhor',c:'#fbbf24'},
+    {v:p.wins,l:'✅ Vitórias',c:'#4ade80'},
+    {v:p.losses,l:'❌ Derrotas',c:'#f87171'},
+    {v:p.battleCount,l:'⚔️ Batalhas',c:'#60a5fa'},
+    {v:p.threeCrownWins,l:'👑 3 Coroas',c:'#c084fc'},
+  ].map(s=>`<div class="stat-card"><div class="stat-value" style="color:${s.c}">${(s.v||0).toLocaleString()}</div>
+    <div class="stat-label">${s.l}</div></div>`).join('')
+
+  $('pClanCard').innerHTML=p.clan?`<div class="card">
+    <div class="card-header"><span>🏰</span><span class="card-title">Clã Atual</span></div>
+    <div class="card-body" style="display:flex;gap:14px;align-items:center">
+      <div style="width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#4f46e5);
+        display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🛡️</div>
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:15px;font-weight:700;margin-bottom:3px">${p.clan.name}</div>
+        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-bottom:6px">${p.clan.tag}</div>
+        <span class="badge badge-purple">${ROLES[p.role]||p.role}</span>
+      </div>
+    </div></div>`:''
+
+  const WAR_TYPES=['riverRacePvP','riverRace','boatBattle']
+  const TOUR_TYPES=['tournament','challengeFinal','challenge']
+  const wars   =blog.filter(b=>WAR_TYPES.includes(b.type))
+  const tours  =blog.filter(b=>TOUR_TYPES.includes(b.type))
+  const regular=blog.filter(b=>!WAR_TYPES.includes(b.type)&&!TOUR_TYPES.includes(b.type))
+
+  $('btnBattles').textContent   =`⚔️ Batalhas (${regular.length})`
+  $('btnWars').textContent      =`🏴 Guerras (${wars.length})`
+  $('btnTournaments').textContent=`🏆 Torneios (${tours.length})`
+
+  $('listBattles').innerHTML =regular.length?regular.map(simpleBattleCard).join(''):emptyState('⚔️','Nenhuma batalha recente.')
+  $('listTournaments').innerHTML=tours.length?tours.map(simpleBattleCard).join(''):emptyState('🏆','Nenhum torneio recente.')
+
+  renderWarSection(wars)
+}
+
+// ── SIMPLE BATTLE CARD (não-guerra) ───────────────────
+function simpleBattleCard(b){
+  const myC=b.team?.[0]?.crowns??0,opC=b.opponent?.[0]?.crowns??0
+  const r=myC>opC?'win':myC<opC?'loss':'draw', l=r==='win'?'V':r==='loss'?'D':'E'
+  const opName=b.opponent?.[0]?.name||'Desconhecido', opTag=b.opponent?.[0]?.tag||''
+  return `<div class="battle-item">
+    <div class="result-box ${r}">${l}</div>
+    <div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:2px">vs ${opName}
+        <span style="font-size:10px;color:var(--muted);font-family:monospace">${opTag}</span></div>
+      <div style="font-size:11px;color:var(--muted)">${b.arena?.name||''} · ${fmtDate(b.battleTime)}
+        · <span class="badge badge-gray" style="font-size:10px">${b.type}</span></div>
+    </div>
+    <div class="crowns"><span style="color:#4ade80">${myC}</span><span style="color:var(--gold)">👑</span><span style="color:#f87171">${opC}</span></div>
+  </div>`
+}
+
+// ══════════════════════════════════════════════════════════
+// SEÇÃO DE GUERRAS — DETALHADA
+// ══════════════════════════════════════════════════════════
+function renderWarSection(wars){
+  if(!wars.length){
+    $('warContent').innerHTML=emptyState('🏴','Nenhuma batalha de guerra no histórico recente.')
+    return
+  }
+
+  const pvp   =wars.filter(b=>b.type==='riverRacePvP')
+  const boat  =wars.filter(b=>b.type==='boatBattle')
+  const other =wars.filter(b=>b.type==='riverRace')
+
+  // ── KPIs de guerra ──
+  const wins  =wars.filter(b=>(b.team?.[0]?.crowns??0)>(b.opponent?.[0]?.crowns??0)).length
+  const losses=wars.filter(b=>(b.team?.[0]?.crowns??0)<(b.opponent?.[0]?.crowns??0)).length
+  const draws =wars.length-wins-losses
+  const winRate=wars.length?((wins/wars.length)*100).toFixed(1):0
+  const totalCrowns=wars.filter(b=>b.type!=='boatBattle').reduce((s,b)=>s+(b.team?.[0]?.crowns??0),0)
+  const avgCrowns=pvp.length?(totalCrowns/pvp.length).toFixed(1):0
+
+  // ── Calcular elixir médio dos decks usados ──
+  function avgElixir(battles){
+    const decks=battles.filter(b=>b.team?.[0]?.cards?.length).map(b=>b.team[0].cards)
+    if(!decks.length) return null
+    const total=decks.reduce((s,cards)=>{
+      const sum=cards.reduce((cs,c)=>cs+(c.elixirCost||0),0)
+      return s+sum/cards.length
+    },0)
+    return (total/decks.length).toFixed(1)
+  }
+  const avgElixirVal=avgElixir(pvp)
+
+  const kpiData=[
+    {v:wars.length,     l:'Batalhas de Guerra', c:'#60a5fa'},
+    {v:`${winRate}%`,   l:'Taxa de Vitória',    c:'#4ade80'},
+    {v:wins,            l:'Vitórias PvP',        c:'#4ade80'},
+    {v:totalCrowns,     l:'Coroas Marcadas',     c:trophyColor(4000)},
+    {v:pvp.length,      l:'Batalhas PvP',        c:'#f5c842'},
+    {v:boat.length,     l:'Ataques ao Barco',    c:'#fb923c'},
+    {v:avgCrowns,       l:'Média de Coroas/Bat.', c:'#c084fc'},
+    {v:avgElixirVal||'—',l:'Elixir Médio/Deck',  c:'#a855f7'},
+  ]
+
+  let html=`<div class="grid4" style="grid-template-columns:repeat(4,1fr)">
+    ${kpiData.map(k=>`<div class="kpi"><div class="kpi-val" style="color:${k.c}">${k.v}</div>
+      <div class="kpi-lbl">${k.l}</div></div>`).join('')}
+  </div>`
+
+  // ── Gráficos de guerra ──
+  html+=`<div class="chart-grid" style="margin-bottom:16px">
+    <div class="chart-card">
+      <div class="chart-header"><span class="chart-title">✅ Resultados nas Guerras</span></div>
+      <div class="chart-body"><div class="chart-wrap"><canvas id="chartWarResults"></canvas></div></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><span class="chart-title">⚔️ PvP vs 🚢 Barco vs Outros</span></div>
+      <div class="chart-body"><div class="chart-wrap"><canvas id="chartWarTypes"></canvas></div></div>
+    </div>
+    <div class="chart-card full">
+      <div class="chart-header"><span class="chart-title">👑 Coroas por Batalha de Guerra (Cronológico)</span></div>
+      <div class="chart-body"><div class="chart-wrap"><canvas id="chartWarCrowns"></canvas></div></div>
+    </div>
+  </div>`
+
+  // ── Batalhas PvP ──
+  if(pvp.length){
+    html+=`<div class="war-section">
+      <div class="war-section-title">⚔️ Batalhas PvP (River Race) — ${pvp.length} batalhas
+        <span class="badge badge-purple" style="margin-left:auto">${((wins/pvp.length)*100).toFixed(0)}% vitórias</span>
+      </div>
+      ${pvp.map((b,i)=>warBattleCard(b,i,'pvp')).join('')}
+    </div>`
+  }
+
+  // ── Ataques ao Barco ──
+  if(boat.length){
+    const boatWins=boat.filter(b=>(b.team?.[0]?.crowns??0)>(b.opponent?.[0]?.crowns??0)).length
+    html+=`<div class="war-section">
+      <div class="war-section-title">🚢 Ataques ao Barco — ${boat.length} batalha${boat.length>1?'s':''}
+        <span class="badge badge-orange" style="margin-left:auto">${boatWins} vitória${boatWins!==1?'s':''}</span>
+      </div>
+      ${boat.map((b,i)=>warBattleCard(b,i,'boat')).join('')}
+    </div>`
+  }
+
+  // ── Outros tipos de guerra ──
+  if(other.length){
+    html+=`<div class="war-section">
+      <div class="war-section-title">🏴 Outros (${other[0].type}) — ${other.length} batalha${other.length>1?'s':''}</div>
+      ${other.map((b,i)=>warBattleCard(b,i,'other')).join('')}
+    </div>`
+  }
+
+  $('warContent').innerHTML=html
+
+  // Renderizar gráficos de guerra após inserir HTML
+  setTimeout(()=>{
+    // Resultados
+    destroyChart('chartWarResults')
+    chartInstances['chartWarResults']=new Chart($('chartWarResults'),{
+      type:'doughnut',
+      data:{labels:['Vitórias','Derrotas','Empates'],
+        datasets:[{data:[wins,losses,draws],
+          backgroundColor:['rgba(34,197,94,.8)','rgba(239,68,68,.8)','rgba(122,138,170,.6)'],
+          borderColor:['#22c55e','#ef4444','#7a8aaa'],borderWidth:2}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom'},tooltip:{callbacks:{
+          label:ctx=>`${ctx.label}: ${ctx.parsed} (${((ctx.parsed/wars.length)*100).toFixed(1)}%)`
+        }}}}
+    })
+
+    // Tipos de guerra
+    destroyChart('chartWarTypes')
+    chartInstances['chartWarTypes']=new Chart($('chartWarTypes'),{
+      type:'doughnut',
+      data:{labels:['PvP','Barco','Outros'],
+        datasets:[{data:[pvp.length,boat.length,other.length],
+          backgroundColor:['rgba(245,200,66,.8)','rgba(251,146,60,.8)','rgba(122,138,170,.6)'],
+          borderColor:['#f5c842','#fb923c','#7a8aaa'],borderWidth:2}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}
+    })
+
+    // Coroas por batalha (cronológico)
+    const sortedPvp=[...pvp].sort((a,b)=>String(a.battleTime).localeCompare(String(b.battleTime)))
+    const crownLabels=sortedPvp.map((b,i)=>i+1)
+    const myCrowns=sortedPvp.map(b=>b.team?.[0]?.crowns??0)
+    const opCrowns=sortedPvp.map(b=>b.opponent?.[0]?.crowns??0)
+    destroyChart('chartWarCrowns')
+    if(sortedPvp.length){
+      chartInstances['chartWarCrowns']=new Chart($('chartWarCrowns'),{
+        type:'bar',
+        data:{labels:crownLabels,
+          datasets:[
+            {label:'Suas Coroas',data:myCrowns,backgroundColor:'rgba(245,200,66,.75)',borderColor:'#f5c842',borderWidth:1},
+            {label:'Coroas Sofridas',data:opCrowns,backgroundColor:'rgba(239,68,68,.6)',borderColor:'#ef4444',borderWidth:1},
+          ]},
+        options:{responsive:true,maintainAspectRatio:false,
+          scales:{x:{ticks:{color:'#7a8aaa'},grid:{display:false},title:{display:true,text:'Batalha #',color:'#7a8aaa'}},
+                  y:{min:0,max:3,ticks:{stepSize:1,color:'#7a8aaa'},grid:{color:'#2a3a5c'}}},
+          plugins:{legend:{position:'bottom'}}
+        }
+      })
+    }
+  },50)
+}
+
+// ── WAR BATTLE CARD (expansível com deck) ─────────────
+function warBattleCard(b,idx,tipo){
+  const myC=b.team?.[0]?.crowns??0, opC=b.opponent?.[0]?.crowns??0
+  const r=myC>opC?'win':myC<opC?'loss':'draw', l=r==='win'?'V':r==='loss'?'D':'E'
+  const opName=b.opponent?.[0]?.name||'Desconhecido', opTag=b.opponent?.[0]?.tag||''
+  const myCards=b.team?.[0]?.cards||[]
+  const opCards=b.opponent?.[0]?.cards||[]
+
+  // King tower HP
+  const myKingHP=b.team?.[0]?.kingTowerHitPoints
+  const opKingHP=b.opponent?.[0]?.kingTowerHitPoints
+  const myPrincessHP=b.team?.[0]?.princessTowersHitPoints||[]
+  const opPrincessHP=b.opponent?.[0]?.princessTowersHitPoints||[]
+
+  // Modo / arena
+  const arena=b.arena?.name||''
+  const mode=b.gameMode?.name||b.type
+
+  // Calcular elixir médio
+  function elixirMedio(cards){ if(!cards.length) return null; return (cards.reduce((s,c)=>s+(c.elixirCost||0),0)/cards.length).toFixed(1) }
+  const myElixir=elixirMedio(myCards), opElixir=elixirMedio(opCards)
+
+  const typeIco=tipo==='boat'?'🚢':tipo==='pvp'?'⚔️':'🏴'
+  const id=`wbd-${tipo}-${idx}`
+
+  const towerInfo=(kingHP,princessHP)=>{
+    if(!kingHP&&!princessHP.length) return ''
+    const pts=[kingHP?`👑 ${kingHP}HP`:'',
+      ...princessHP.map((h,i)=>`🗼${i+1} ${h}HP`)].filter(Boolean).join('  ')
+    return `<span style="font-size:10px;color:var(--muted)">${pts}</span>`
+  }
+
+  return `<div class="war-battle">
+    <div class="war-battle-header" onclick="toggleWarBattle('${id}')">
+      <div class="result-box ${r}">${l}</div>
+      <div style="min-width:0">
+        <div style="font-size:13px;font-weight:700;margin-bottom:2px">
+          ${typeIco} vs ${opName}
+          <span style="font-size:10px;color:var(--muted);font-family:monospace">${opTag}</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap">
+          <span>${fmtDate(b.battleTime)}</span>
+          ${arena?`<span>🏟️ ${arena}</span>`:''}
+          ${myElixir?`<span><span class="elixir-dot"></span>${myElixir} elixir</span>`:''}
+          ${myCards.length?`<span>🃏 ${myCards.length} cartas</span>`:''}
+        </div>
+      </div>
+      <div class="crowns"><span style="color:#4ade80">${myC}</span><span style="color:var(--gold)">👑</span><span style="color:#f87171">${opC}</span></div>
+      <span style="color:var(--muted);font-size:12px;margin-left:4px" id="arr-${id}">▼</span>
+    </div>
+    <div class="war-battle-body hidden" id="${id}">
+      <!-- Torres -->
+      ${(myKingHP||opKingHP)?`<div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">
+        <div style="font-size:12px"><span style="color:#4ade80;font-weight:700">Suas Torres:</span>
+          ${towerInfo(myKingHP,myPrincessHP)||'<span style="color:var(--muted)">—</span>'}</div>
+        <div style="font-size:12px"><span style="color:#f87171;font-weight:700">Torres do Oponente:</span>
+          ${towerInfo(opKingHP,opPrincessHP)||'<span style="color:var(--muted)">—</span>'}</div>
+      </div>`:''}
+
+      <!-- Decks -->
+      <div class="grid2" style="gap:12px">
+        ${myCards.length?`<div>
+          <div style="font-size:11px;font-weight:700;color:#4ade80;text-transform:uppercase;
+            letter-spacing:.5px;margin-bottom:8px">🃏 Seu Deck ${myElixir?`<span style="color:#a855f7;margin-left:6px"><span class="elixir-dot"></span>${myElixir} elixir médio</span>`:''}
+          </div>
+          <div class="deck-grid">${myCards.map(c=>`<div class="deck-card">
+            <div class="deck-card-name">${c.name}</div>
+            <div><span class="deck-card-lvl">Nv.${c.level||'?'}</span>
+              ${c.elixirCost?`<span class="deck-card-elixir"> · ${c.elixirCost}💧</span>`:''}</div>
+          </div>`).join('')}</div>
+        </div>`:'<div style="color:var(--muted);font-size:12px">Deck não disponível</div>'}
+
+        ${opCards.length?`<div>
+          <div style="font-size:11px;font-weight:700;color:#f87171;text-transform:uppercase;
+            letter-spacing:.5px;margin-bottom:8px">🃏 Deck do Oponente ${opElixir?`<span style="color:#a855f7;margin-left:6px"><span class="elixir-dot"></span>${opElixir} elixir médio</span>`:''}
+          </div>
+          <div class="deck-grid">${opCards.map(c=>`<div class="deck-card">
+            <div class="deck-card-name">${c.name}</div>
+            <div><span class="deck-card-lvl">Nv.${c.level||'?'}</span>
+              ${c.elixirCost?`<span class="deck-card-elixir"> · ${c.elixirCost}💧</span>`:''}</div>
+          </div>`).join('')}</div>
+        </div>`:''}
+      </div>
+    </div>
+  </div>`
+}
+
+function toggleWarBattle(id){
+  const body=$(''+id), arr=$('arr-'+id)
+  const isHidden=body.classList.contains('hidden')
+  body.classList.toggle('hidden',!isHidden)
+  if(arr) arr.textContent=isHidden?'▲':'▼'
+}
+
+// ══════════════════════════════════════════════════════════
+// GRÁFICOS — JOGADOR (gerais)
+// ══════════════════════════════════════════════════════════
+function renderPlayerCharts(){
+  const battles=filterBattlesByPeriod(allBattleLog)
+  if(!battles.length){
+    $('pKpis').innerHTML=`<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px">Nenhuma batalha no período.</div>`
+    ;['chartTrophies','chartResults','chartCrowns','chartTypes','chartArena','chartWeekday'].forEach(destroyChart)
+    return
+  }
+  const wins=battles.filter(b=>(b.team?.[0]?.crowns??0)>(b.opponent?.[0]?.crowns??0)).length
+  const losses=battles.filter(b=>(b.team?.[0]?.crowns??0)<(b.opponent?.[0]?.crowns??0)).length
+  const draws=battles.length-wins-losses
+  const winRate=battles.length?((wins/battles.length)*100).toFixed(1):0
+  const totalCrowns=battles.reduce((s,b)=>s+(b.team?.[0]?.crowns??0),0)
+
+  $('pKpis').innerHTML=[
+    {v:battles.length,l:'Batalhas',c:'#60a5fa'},
+    {v:`${winRate}%`, l:'Taxa de Vitória',c:'#4ade80'},
+    {v:wins,          l:'Vitórias',c:'#4ade80'},
+    {v:totalCrowns,   l:'Coroas Marcadas',c:trophyColor(4000)},
+  ].map(k=>`<div class="kpi"><div class="kpi-val" style="color:${k.c}">${k.v}</div>
+    <div class="kpi-lbl">${k.l}</div></div>`).join('')
+
+  // Troféus
+  const trophyData=[...battles]
+    .filter(b=>b.team?.[0]?.startingTrophies)
+    .sort((a,b)=>String(a.battleTime).localeCompare(String(b.battleTime)))
+    .map(b=>({x:parseTs(b.battleTime),y:b.team[0].startingTrophies}))
+  destroyChart('chartTrophies')
+  if(trophyData.length){
+    chartInstances['chartTrophies']=new Chart($('chartTrophies'),{
+      type:'line',
+      data:{datasets:[{label:'Troféus',data:trophyData,borderColor:'#f5c842',
+        backgroundColor:'rgba(245,200,66,.1)',tension:.3,pointRadius:3,pointBackgroundColor:'#f5c842',fill:true}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        scales:{x:{type:'time',time:{unit:'day',displayFormats:{day:'dd/MM'}},
+          ticks:{color:'#7a8aaa'},grid:{color:'#2a3a5c'}},y:{ticks:{color:'#7a8aaa'},grid:{color:'#2a3a5c'}}},
+        plugins:{legend:{display:false}}}
+    })
+  }
+  // Resultados
+  destroyChart('chartResults')
+  chartInstances['chartResults']=new Chart($('chartResults'),{
+    type:'doughnut',
+    data:{labels:['Vitórias','Derrotas','Empates'],
+      datasets:[{data:[wins,losses,draws],
+        backgroundColor:['rgba(34,197,94,.8)','rgba(239,68,68,.8)','rgba(122,138,170,.6)'],
+        borderColor:['#22c55e','#ef4444','#7a8aaa'],borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},
+      tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.parsed} (${((ctx.parsed/battles.length)*100).toFixed(1)}%)`}}}}
+  })
+  // Coroas por dia
+  const crownByDay={}
+  battles.forEach(b=>{
+    const d=parseTs(b.battleTime);if(!d) return
+    const key=d.toLocaleDateString('pt-BR')
+    if(!crownByDay[key]){crownByDay[key]={mine:0,opp:0}}
+    crownByDay[key].mine+=(b.team?.[0]?.crowns??0)
+    crownByDay[key].opp +=(b.opponent?.[0]?.crowns??0)
+  })
+  const crownDays=Object.keys(crownByDay)
+  destroyChart('chartCrowns')
+  chartInstances['chartCrowns']=new Chart($('chartCrowns'),{
+    type:'bar',
+    data:{labels:crownDays,datasets:[
+      {label:'Suas Coroas',data:crownDays.map(d=>crownByDay[d].mine),backgroundColor:'rgba(245,200,66,.75)',borderColor:'#f5c842',borderWidth:1},
+      {label:'Sofridas',data:crownDays.map(d=>crownByDay[d].opp),backgroundColor:'rgba(239,68,68,.6)',borderColor:'#ef4444',borderWidth:1},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{ticks:{color:'#7a8aaa',maxRotation:45},grid:{display:false}},y:{ticks:{color:'#7a8aaa'},grid:{color:'#2a3a5c'}}},
+      plugins:{legend:{position:'bottom'}}}
+  })
+  // Tipos
+  const typeCounts={}
+  battles.forEach(b=>{typeCounts[b.type]=(typeCounts[b.type]||0)+1})
+  const typeLabels=Object.keys(typeCounts)
+  destroyChart('chartTypes')
+  chartInstances['chartTypes']=new Chart($('chartTypes'),{
+    type:'doughnut',
+    data:{labels:typeLabels,datasets:[{data:typeLabels.map(t=>typeCounts[t]),
+      backgroundColor:PALETTE.slice(0,typeLabels.length),borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}
+  })
+  // Arena win rate
+  const arenaStats={}
+  battles.forEach(b=>{
+    const arena=b.arena?.name||'Desconhecida'
+    if(!arenaStats[arena]){arenaStats[arena]={w:0,t:0}}
+    arenaStats[arena].t++
+    if((b.team?.[0]?.crowns??0)>(b.opponent?.[0]?.crowns??0)) arenaStats[arena].w++
+  })
+  const arenaNames=Object.keys(arenaStats)
+  const arenaRates=arenaNames.map(a=>((arenaStats[a].w/arenaStats[a].t)*100).toFixed(1))
+  destroyChart('chartArena')
+  chartInstances['chartArena']=new Chart($('chartArena'),{
+    type:'bar',
+    data:{labels:arenaNames,datasets:[{label:'% Vitórias',data:arenaRates,
+      backgroundColor:arenaRates.map(r=>r>=50?'rgba(34,197,94,.7)':'rgba(239,68,68,.6)'),
+      borderColor:arenaRates.map(r=>r>=50?'#22c55e':'#ef4444'),borderWidth:1}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      scales:{x:{min:0,max:100,ticks:{color:'#7a8aaa',callback:v=>v+'%'},grid:{color:'#2a3a5c'}},
+              y:{ticks:{color:'#7a8aaa'},grid:{display:false}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.x}% vitórias`}}}}
+  })
+  // Dia da semana
+  const wdC=[0,0,0,0,0,0,0],wdW=[0,0,0,0,0,0,0]
+  battles.forEach(b=>{
+    const d=parseTs(b.battleTime);if(!d) return
+    const wd=d.getDay();wdC[wd]++
+    if((b.team?.[0]?.crowns??0)>(b.opponent?.[0]?.crowns??0)) wdW[wd]++
+  })
+  destroyChart('chartWeekday')
+  chartInstances['chartWeekday']=new Chart($('chartWeekday'),{
+    type:'bar',
+    data:{labels:WEEKDAYS,datasets:[
+      {label:'Total',data:wdC,backgroundColor:'rgba(59,130,246,.5)',borderColor:'#3b82f6',borderWidth:1},
+      {label:'Vitórias',data:wdW,backgroundColor:'rgba(34,197,94,.7)',borderColor:'#22c55e',borderWidth:1},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{ticks:{color:'#7a8aaa'},grid:{display:false}},y:{ticks:{color:'#7a8aaa'},grid:{color:'#2a3a5c'}}},
+      plugins:{legend:{position:'bottom'}}}
+  })
+}
+
+// ══════════════════════════════════════════════════════════
+// BUSCA CLÃ
+// ══════════════════════════════════════════════════════════
+async function searchClan(){
+  if(!apiKey()){showError('Insira sua chave de API.');return}
+  const tag=$('clanTag').value.trim().replace(/^#/,'')
+  if(!tag){showError('Insira a tag do clã.');return}
+  clearError();$('clanResult').classList.add('hidden')
+  $('spinnerClan').classList.remove('hidden');$('btnClan').disabled=true
+  try{
+    const [clan,members,warlog]=await Promise.all([
+      apiFetch(`/api/clan/${tag}`),
+      apiFetch(`/api/clan/${tag}/members`),
+      apiFetch(`/api/clan/${tag}/warlog`)
+    ])
+    currentClanTag=clan.tag||('#'+tag)
+    currentClanData=clan
+    allMembers=members.items||[]
+    allWarLog=warlog.items||[]
+    renderClan(clan,allMembers,allWarLog)
+    $('clanResult').classList.remove('hidden')
+    switchClanTab('info')
+  }catch(e){showError('Erro ao buscar clã: '+e.message)}
+  finally{$('spinnerClan').classList.add('hidden');$('btnClan').disabled=false}
+}
+
+function renderClan(c,members,warlog){
+  $('cName').textContent=c.name;$('cTag').textContent=c.tag
+  $('cDesc').textContent=c.description||''
+  $('cScore').innerHTML=`<span style="font-size:13px;font-weight:700;color:var(--gold)">🏆 ${(c.clanScore||0).toLocaleString()} pts</span>`
+  $('cMembers').textContent=`👥 ${c.members}/50`
+  $('cWarTrophies').textContent=`⚓ ${(c.clanWarTrophies||0).toLocaleString()}`
+  const typeLabel={open:'🔓 Aberto',inviteOnly:'📩 Apenas convite',closed:'🔒 Fechado'}
+  $('ctInfo').innerHTML=`<div class="card">
+    <div class="card-header"><span>📊</span><span class="card-title">Informações do Clã</span></div>
+    <div class="card-body">${[
+      ['Tipo',typeLabel[c.type]||c.type],['Localização',c.location?`🌍 ${c.location.name}`:'—'],
+      ['Membros',`👥 ${c.members}/50`],['Pontuação',`🏆 ${(c.clanScore||0).toLocaleString()}`],
+      ['Troféus de Guerra',`⚓ ${(c.clanWarTrophies||0).toLocaleString()}`],
+      ['Doações/Semana',`🎁 ${(c.donationsPerWeek||0).toLocaleString()}`],
+      ['Troféus Mínimos',`🏅 ${(c.requiredTrophies||0).toLocaleString()}`],
+    ].map(([l,v])=>`<div style="display:flex;justify-content:space-between;align-items:center;
+      padding:8px 12px;background:var(--surface2);border-radius:6px;font-size:13px;margin-bottom:6px">
+      <span style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:1px">${l}</span>
+      <span style="font-weight:700">${v}</span></div>`).join('')}</div></div>`
+
+  $('btnMembers').textContent=`👥 Membros (${members.length})`
+  $('ctMembers').innerHTML=`<div class="card">
+    <div class="card-header"><span>👥</span><span class="card-title">Membros Atuais</span></div>
+    <div>${members.map((m,i)=>{
+      const rb=m.role==='leader'?'badge-gold':m.role==='coLeader'?'badge-blue':m.role==='elder'?'badge-green':'badge-gray'
+      return `<div class="member-row">
+        <div class="member-rank">${i+1}</div>
+        <div><div class="member-name">${m.name}</div><div class="member-tag">${m.tag}</div></div>
+        <div><span class="badge ${rb}" style="font-size:10px">${ROLES[m.role]||m.role}</span></div>
+        <div class="member-trophies" style="color:${trophyColor(m.trophies)}">🏆 ${(m.trophies||0).toLocaleString()}</div>
+      </div>`}).join('')}</div></div>`
+
+  $('btnWarLog').textContent=`⚓ Guerras (${warlog.length})`
+  $('ctWars').innerHTML=warlog.length===0?emptyState('⚓','Nenhum histórico de guerra.'):
+    warlog.map((race,i)=>{
+      const s=race.standings||[],our=s.find(x=>x.clan?.tag===c.tag),oc=our?.clan
+      const rb=our?.rank===1?'badge-gold':our?.rank<=3?'badge-blue':'badge-gray'
+      const rl=our?.rank===1?'🥇 1º':our?.rank===2?'🥈 2º':our?.rank===3?'🥉 3º':`#${our?.rank}`
+      return `<div class="race-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="race-title">⚓ Temporada ${race.seasonId||'#'+(warlog.length-i)}</div>
+          ${our?`<span class="badge ${rb}">${rl}</span>`:''}
+        </div>
+        ${oc?`<div style="background:rgba(245,200,66,.06);border-radius:6px;padding:10px 12px;
+          margin-bottom:10px;border:1px solid rgba(245,200,66,.15)">
+          <div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:6px">NOSSO DESEMPENHO</div>
+          <div style="display:flex;gap:20px;font-size:12px;flex-wrap:wrap">
+            <div><strong>${(oc.fame||0).toLocaleString()}</strong> <span style="color:var(--muted)">Fama</span></div>
+            <div><strong>${(oc.repairPoints||0).toLocaleString()}</strong> <span style="color:var(--muted)">Reparos</span></div>
+            <div><strong>${oc.participants?.length||0}</strong> <span style="color:var(--muted)">Participantes</span></div>
+          </div></div>`:''}
+        ${s.length?`<table class="war-table"><thead><tr><th>Pos</th><th>Clã</th><th>Fama</th><th>Part.</th></tr></thead>
+          <tbody>${[...s].sort((a,b)=>a.rank-b.rank).map(x=>`
+            <tr ${x.clan?.tag===c.tag?'class="highlight"':''}>
+              <td><span class="badge ${x.rank===1?'badge-gold':x.rank<=3?'badge-blue':'badge-gray'}" style="font-size:10px">
+                ${x.rank===1?'🥇':x.rank===2?'🥈':x.rank===3?'🥉':`#${x.rank}`}</span></td>
+              <td style="font-weight:${x.clan?.tag===c.tag?700:400}">${x.clan?.tag===c.tag?'⭐ ':''}${x.clan?.name||'—'}</td>
+              <td style="color:var(--gold);font-weight:700">${(x.clan?.fame||0).toLocaleString()}</td>
+              <td style="color:var(--muted)">${x.clan?.participants?.length||0}</td>
+            </tr>`).join('')}
+          </tbody></table>`:''}
+      </div>`}).join('')
+}
+
+// ══════════════════════════════════════════════════════════
+// GRÁFICOS — CLÃ
+// ══════════════════════════════════════════════════════════
+function renderClanCharts(){
+  const warlog=filterWarlog(allWarLog),c=currentClanData
+  const ourRaces=warlog.map(r=>(r.standings||[]).find(s=>s.clan?.tag===c.tag)).filter(Boolean)
+  const avgFame=ourRaces.length?Math.round(ourRaces.reduce((s,r)=>s+(r.clan?.fame||0),0)/ourRaces.length):0
+  const wins1st=ourRaces.filter(r=>r.rank===1).length
+  const avgRank=ourRaces.length?(ourRaces.reduce((s,r)=>s+(r.rank||0),0)/ourRaces.length).toFixed(1):'—'
+
+  $('cKpis').innerHTML=[
+    {v:warlog.length,l:'Guerras',c:'#60a5fa'},
+    {v:avgFame.toLocaleString(),l:'Fama Média',c:'#f5c842'},
+    {v:wins1st,l:'1º Lugares',c:'#ffd700'},
+    {v:avgRank,l:'Posição Média',c:'#c084fc'},
+  ].map(k=>`<div class="kpi"><div class="kpi-val" style="color:${k.c}">${k.v}</div>
+    <div class="kpi-lbl">${k.l}</div></div>`).join('')
+
+  const sLabels=warlog.map((r,i)=>`S${r.seasonId||warlog.length-i}`)
+  const fameData=warlog.map(r=>{const our=(r.standings||[]).find(s=>s.clan?.tag===c.tag);return our?.clan?.fame||0})
+  const rankData=warlog.map(r=>{const our=(r.standings||[]).find(s=>s.clan?.tag===c.tag);return our?.rank||null})
+  const partData=warlog.map(r=>{const our=(r.standings||[]).find(s=>s.clan?.tag===c.tag);return our?.clan?.participants?.length||0})
+
+  destroyChart('chartClanFame')
+  chartInstances['chartClanFame']=new Chart($('chartClanFame'),{
+    type:'bar',
+    data:{labels:[...sLabels].reverse(),datasets:[{label:'Fama',data:[...fameData].reverse(),
+      backgroundColor:fameData.map(f=>f>=3500?'rgba(245,200,66,.8)':f>=2000?'rgba(59,130,246,.7)':'rgba(122,138,170,.5)').reverse(),
+      borderColor:fameData.map(f=>f>=3500?'#f5c842':f>=2000?'#3b82f6':'#7a8aaa').reverse(),
+      borderWidth:1,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{ticks:{color:'#7a8aaa'},grid:{display:false}},y:{ticks:{color:'#7a8aaa'},grid:{color:'#2a3a5c'}}},
+      plugins:{legend:{display:false}}}
+  })
+  destroyChart('chartClanRank')
+  chartInstances['chartClanRank']=new Chart($('chartClanRank'),{
+    type:'line',
+    data:{labels:[...sLabels].reverse(),datasets:[{label:'Posição',data:[...rankData].reverse(),
+      borderColor:'#a855f7',backgroundColor:'rgba(168,85,247,.1)',tension:.3,
+      pointRadius:5,pointBackgroundColor:'#a855f7',fill:true}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{ticks:{color:'#7a8aaa'},grid:{display:false}},
+        y:{reverse:true,min:1,max:5,ticks:{stepSize:1,color:'#7a8aaa',callback:v=>`${v}º`},grid:{color:'#2a3a5c'}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y}º lugar`}}}}
+  })
+  destroyChart('chartClanParticipants')
+  chartInstances['chartClanParticipants']=new Chart($('chartClanParticipants'),{
+    type:'bar',
+    data:{labels:[...sLabels].reverse(),datasets:[{label:'Participantes',data:[...partData].reverse(),
+      backgroundColor:'rgba(34,197,94,.6)',borderColor:'#22c55e',borderWidth:1,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{ticks:{color:'#7a8aaa'},grid:{display:false}},y:{ticks:{color:'#7a8aaa'},grid:{color:'#2a3a5c'}}},
+      plugins:{legend:{display:false}}}
+  })
+  // Distribuição troféus membros
+  const brackets=[{l:'< 2k',mn:0,mx:1999},{l:'2k–3k',mn:2000,mx:2999},{l:'3k–4k',mn:3000,mx:3999},
+    {l:'4k–5k',mn:4000,mx:4999},{l:'5k–6k',mn:5000,mx:5999},{l:'6k–7k',mn:6000,mx:6999},{l:'7k+',mn:7000,mx:Infinity}]
+  const bC=brackets.map(b=>allMembers.filter(m=>(m.trophies||0)>=b.mn&&(m.trophies||0)<=b.mx).length)
+  const bColors=['rgba(122,138,170,.7)','rgba(59,130,246,.7)','rgba(34,197,94,.7)','rgba(245,200,66,.7)','rgba(251,146,60,.8)','rgba(239,68,68,.8)','rgba(255,77,166,.9)']
+  destroyChart('chartMemberTrophies')
+  chartInstances['chartMemberTrophies']=new Chart($('chartMemberTrophies'),{
+    type:'bar',
+    data:{labels:brackets.map(b=>b.l),datasets:[{label:'Membros',data:bC,
+      backgroundColor:bColors,borderWidth:1,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{ticks:{color:'#7a8aaa'},grid:{display:false}},y:{ticks:{stepSize:1,color:'#7a8aaa'},grid:{color:'#2a3a5c'}}},
+      plugins:{legend:{display:false}}}
+  })
+  // Top contribuidores
+  const fameTotals={}
+  allWarLog.forEach(r=>{
+    const our=(r.standings||[]).find(s=>s.clan?.tag===c.tag)
+    if(!our) return
+    ;(our.clan?.participants||[]).forEach(p=>{
+      fameTotals[p.name]=(fameTotals[p.name]||0)+(p.fame||0)
+    })
+  })
+  const topC=Object.entries(fameTotals).sort((a,b)=>b[1]-a[1]).slice(0,15)
+  destroyChart('chartTopContrib')
+  chartInstances['chartTopContrib']=new Chart($('chartTopContrib'),{
+    type:'bar',
+    data:{labels:topC.map(([n])=>n),datasets:[{label:'Fama Total',data:topC.map(([,v])=>v),
+      backgroundColor:topC.map((_,i)=>i===0?'rgba(255,215,0,.85)':i===1?'rgba(192,192,192,.8)':i===2?'rgba(205,127,50,.8)':'rgba(59,130,246,.65)'),
+      borderColor:topC.map((_,i)=>i===0?'#ffd700':i===1?'#c0c0c0':i===2?'#cd7f32':'#3b82f6'),
+      borderWidth:1,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      scales:{x:{ticks:{color:'#7a8aaa'},grid:{color:'#2a3a5c'}},y:{ticks:{color:'#e8eaf6',font:{size:11}},grid:{display:false}}},
+      plugins:{legend:{display:false}}}
+  })
+  // Doações
+  const topDon=[...allMembers].sort((a,b)=>(b.donations||0)-(a.donations||0)).slice(0,10)
+  destroyChart('chartDonations')
+  chartInstances['chartDonations']=new Chart($('chartDonations'),{
+    type:'bar',
+    data:{labels:topDon.map(m=>m.name),datasets:[{label:'Doações',data:topDon.map(m=>m.donations||0),
+      backgroundColor:'rgba(168,85,247,.7)',borderColor:'#a855f7',borderWidth:1,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      scales:{x:{ticks:{color:'#7a8aaa'},grid:{color:'#2a3a5c'}},y:{ticks:{color:'#e8eaf6',font:{size:11}},grid:{display:false}}},
+      plugins:{legend:{display:false}}}
+  })
+  // Cargos
+  const rc={leader:0,coLeader:0,elder:0,member:0}
+  allMembers.forEach(m=>{if(rc[m.role]!==undefined)rc[m.role]++})
+  destroyChart('chartRoles')
+  chartInstances['chartRoles']=new Chart($('chartRoles'),{
+    type:'doughnut',
+    data:{labels:['Líder','Co-Líder','Ancião','Membro'],
+      datasets:[{data:[rc.leader,rc.coLeader,rc.elder,rc.member],
+        backgroundColor:['rgba(245,200,66,.8)','rgba(59,130,246,.8)','rgba(34,197,94,.7)','rgba(122,138,170,.6)'],
+        borderColor:['#f5c842','#3b82f6','#22c55e','#7a8aaa'],borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}
+  })
+}
+</script>
+</body>
+</html>
