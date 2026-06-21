@@ -1,0 +1,410 @@
+/* ════════════════════════════════════════════════════════════════
+   CLASH ROYALE TRACKER — design tokens & componentes
+   Paleta: dourado (jogador) · violeta (clã) · safira (dados/gráficos)
+   inspirada no próprio sistema de raridade de cartas do jogo.
+   ════════════════════════════════════════════════════════════════ */
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  /* base */
+  --bg:#080a18;
+  --surface:#10142b;
+  --surface2:#181d42;
+  --surface3:#222a58;
+  --border:#2a3066;
+  --border-soft:rgba(247,201,72,.16);
+  --text:#eef0fb;
+  --muted:#8b94c4;
+
+  /* marca — mantidos os MESMOS nomes que o JS referencia via var(--x) */
+  --gold:#f7c948;
+  --gold2:#d99a1d;
+  --blue:#4d7cfb;
+  --blue2:#2454d6;
+  --purple:#b85cf2;
+  --radius:14px;
+
+  /* funcionais */
+  --green:#22c55e;
+  --red:#ef4444;
+  --orange:#fb923c;
+
+  /* gradientes de assinatura — usados nas bordas superiores dos cards */
+  --grad-gold:linear-gradient(90deg,#ffe18a,var(--gold) 45%,var(--gold2));
+  --grad-purple:linear-gradient(90deg,#dba8ff,var(--purple) 45%,#7c3aed);
+  --grad-blue:linear-gradient(90deg,#9db8ff,var(--blue) 45%,var(--blue2));
+
+  --shadow-1:0 2px 10px rgba(3,5,16,.45);
+  --shadow-2:0 14px 36px rgba(3,5,16,.55);
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}
+}
+
+html{scroll-behavior:smooth}
+
+body{
+  background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;
+  font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  padding-bottom:0;
+  background-image:
+    radial-gradient(ellipse 900px 600px at 12% -5%,rgba(184,92,242,.10) 0%,transparent 55%),
+    radial-gradient(ellipse 900px 700px at 95% 15%,rgba(77,124,251,.09) 0%,transparent 55%),
+    radial-gradient(ellipse 700px 500px at 50% 100%,rgba(247,201,72,.05) 0%,transparent 60%);
+  background-attachment:fixed;
+}
+
+::selection{background:rgba(247,201,72,.3);color:#fff}
+
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+
+/* scrollbar fino, discreto */
+::-webkit-scrollbar{height:7px;width:7px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:var(--border)}
+
+/* ═══════════════════════ HEADER / CRISTA ═══════════════════════ */
+.header{
+  position:relative;
+  background:linear-gradient(135deg,#0c1640,#190e3c 60%,#0c1640);
+  padding:20px 24px;display:flex;align-items:center;gap:16px;
+  box-shadow:var(--shadow-2);
+  overflow:hidden;
+}
+.header::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold) 20%,#fff7d6 50%,var(--gold) 80%,transparent);
+  background-size:200% 100%;
+  animation:shimmer 7s linear infinite;
+}
+@keyframes shimmer{to{background-position:-200% 0}}
+
+.logo{
+  width:50px;height:50px;flex-shrink:0;position:relative;
+  display:flex;align-items:center;justify-content:center;
+  filter:drop-shadow(0 4px 10px rgba(247,201,72,.35));
+}
+.logo svg{width:100%;height:100%}
+
+.header-title{
+  font-family:'Cinzel',serif;font-size:21px;font-weight:900;color:var(--gold);
+  text-shadow:0 0 24px rgba(247,201,72,.45);letter-spacing:.5px;line-height:1.2;
+}
+.header-sub{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:2.5px;margin-top:4px;font-weight:700;}
+
+.main{max-width:1040px;margin:0 auto;padding:22px 16px 90px;}
+@media(min-width:701px){.main{padding-bottom:24px}}
+
+/* ═══════════════════════ COMMAND BAR (API key) ═══════════════════════ */
+.api-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:13px 18px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+  position:sticky;top:10px;z-index:30;backdrop-filter:blur(14px) saturate(140%);
+  background:rgba(16,20,43,.88);
+  box-shadow:var(--shadow-1);
+}
+.api-card .input{min-width:160px}
+@media(max-width:480px){
+  .api-card{position:static}
+  .api-card a{width:100%;text-align:right}
+}
+.api-label{font-size:10.5px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);white-space:nowrap;font-weight:800;}
+
+.input{
+  flex:1;background:var(--bg);border:1px solid var(--border);border-radius:9px;
+  padding:10px 14px;color:var(--text);font-family:'Nunito',sans-serif;font-size:13px;outline:none;
+  transition:border-color .2s,box-shadow .2s;min-height:40px;
+}
+.input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(247,201,72,.14);}
+.input::placeholder{color:var(--muted);}
+
+.info-note{
+  background:rgba(77,124,251,.07);border:1px solid rgba(77,124,251,.22);border-radius:10px;
+  padding:11px 15px;font-size:12px;color:#a9c0ff;margin-bottom:14px;line-height:1.65;
+}
+.info-note a{color:#c7d8ff}
+
+/* ═══════════════════════ TABS PRINCIPAIS ═══════════════════════ */
+.tabs{
+  display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:6px;margin-bottom:18px;
+  box-shadow:var(--shadow-1);
+}
+.tab{
+  flex:1;padding:11px 16px;border:none;border-radius:9px;background:transparent;
+  color:var(--muted);cursor:pointer;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;
+  transition:all .2s;text-transform:uppercase;letter-spacing:.6px;min-height:44px;
+}
+.tab.active{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#1a1304;
+  box-shadow:0 6px 16px rgba(247,201,72,.3);}
+.tab:hover:not(.active){background:var(--surface2);color:var(--text);}
+
+@media(max-width:700px){
+  body{padding-bottom:78px}
+  .tabs{
+    position:fixed;left:12px;right:12px;bottom:12px;margin-bottom:0;z-index:40;
+    background:rgba(16,20,43,.92);backdrop-filter:blur(16px) saturate(140%);
+    box-shadow:0 -8px 28px rgba(3,5,16,.5);
+  }
+}
+
+.search-bar{display:flex;gap:10px;margin-bottom:10px;}
+.btn{
+  padding:11px 20px;border:none;border-radius:9px;cursor:pointer;font-family:'Nunito',sans-serif;
+  font-weight:800;font-size:13px;transition:all .2s;display:flex;align-items:center;gap:6px;
+  text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;min-height:42px;
+}
+.btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1304;
+  box-shadow:0 6px 16px rgba(247,201,72,.28);}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(247,201,72,.36);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-dl-json{background:linear-gradient(135deg,var(--blue2),var(--blue));color:#fff;font-size:12px;padding:9px 14px;}
+.btn-dl-json:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(77,124,251,.3);}
+.btn-dl-csv{background:linear-gradient(135deg,#15803d,#22c55e);color:#fff;font-size:12px;padding:9px 14px;}
+.btn-dl-csv:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(34,197,94,.3);}
+
+.download-bar{
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+  background:var(--surface2);border:1px solid var(--border);border-radius:11px;
+  padding:12px 16px;margin-bottom:16px;
+}
+.download-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:800;}
+
+.tag-hint{font-size:11.5px;color:var(--muted);margin-bottom:16px;}
+.error-box{
+  background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.35);border-radius:10px;
+  padding:13px 16px;color:#fca5a5;font-size:13px;margin-bottom:16px;
+  animation:slideIn .25s ease;
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+.spinner-wrap{display:flex;justify-content:center;padding:52px;}
+.spinner{
+  width:38px;height:38px;border-radius:50%;
+  border:3px solid var(--surface3);border-top-color:var(--gold);border-right-color:var(--gold);
+  animation:spin .7s cubic-bezier(.5,0,.5,1) infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══════════════════════ CARDS (com borda-assinatura) ═══════════════════════
+   Cor da borda superior muda por contexto: dourado (jogador), violeta (clã).
+   Cards de gráfico são sempre safira — sinalizam "isto é um dado". */
+.card{
+  position:relative;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;margin-bottom:16px;
+  box-shadow:var(--shadow-1);
+}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad-gold);}
+#tabClan .card::before{background:var(--grad-purple);}
+
+.card-header{
+  background:linear-gradient(135deg,var(--surface2),rgba(247,201,72,.05));
+  border-bottom:1px solid var(--border);padding:13px 18px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+}
+#tabClan .card-header{background:linear-gradient(135deg,var(--surface2),rgba(184,92,242,.06));}
+.card-title{font-family:'Cinzel',serif;font-size:12.5px;font-weight:700;color:var(--gold);letter-spacing:.6px;text-transform:uppercase;}
+#tabClan .card-title{color:#dba8ff}
+.card-body{padding:18px;}
+
+/* ═══════════════════════ HERO (perfil / clã) ═══════════════════════ */
+.hero{
+  position:relative;background:linear-gradient(135deg,#0c1640,#190e3c);
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px;margin-bottom:16px;display:flex;gap:20px;align-items:center;
+  overflow:hidden;box-shadow:var(--shadow-2);
+}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad-gold);}
+#tabClan .hero::before{background:var(--grad-purple);}
+.hero-avatar{
+  width:74px;height:74px;background:linear-gradient(135deg,var(--gold2),var(--gold));
+  border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:32px;
+  box-shadow:0 10px 26px rgba(247,201,72,.32);flex-shrink:0;border:2px solid rgba(255,255,255,.18);
+}
+#tabClan .hero-avatar{background:linear-gradient(135deg,#7c3aed,#4f46e5);box-shadow:0 10px 26px rgba(124,58,237,.32);}
+.hero-name{font-family:'Cinzel',serif;font-size:21px;font-weight:900;margin-bottom:4px;}
+.hero-tag{font-size:11.5px;color:var(--muted);margin-bottom:11px;font-family:'SF Mono',Consolas,monospace;letter-spacing:1px;}
+.stat-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+
+@media(max-width:700px){.hero{flex-direction:column;text-align:center;padding:22px 18px}}
+
+/* ═══════════════════════ BADGES ═══════════════════════ */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:20px;
+  font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
+  border:1px solid transparent;
+}
+.badge-gold{background:rgba(247,201,72,.14);color:var(--gold);border-color:rgba(247,201,72,.32);}
+.badge-blue{background:rgba(77,124,251,.14);color:#8fb0ff;border-color:rgba(77,124,251,.32);}
+.badge-green{background:rgba(34,197,94,.14);color:#4ade80;border-color:rgba(34,197,94,.32);}
+.badge-red{background:rgba(239,68,68,.14);color:#f87171;border-color:rgba(239,68,68,.32);}
+.badge-purple{background:rgba(184,92,242,.14);color:#dba8ff;border-color:rgba(184,92,242,.32);}
+.badge-orange{background:rgba(251,146,60,.14);color:#fdba74;border-color:rgba(251,146,60,.32);}
+.badge-gray{background:rgba(139,148,196,.12);color:var(--muted);border-color:rgba(139,148,196,.28);}
+
+/* ═══════════════════════ SUB-TABS ═══════════════════════ */
+.sub-tabs{
+  display:flex;gap:4px;background:var(--surface2);border-radius:10px;padding:4px;
+  margin-bottom:16px;border:1px solid var(--border);overflow-x:auto;
+  scrollbar-width:none;
+}
+.sub-tabs::-webkit-scrollbar{display:none}
+.sub-tab{
+  padding:8px 15px;border:none;border-radius:7px;background:transparent;color:var(--muted);
+  cursor:pointer;font-family:'Nunito',sans-serif;font-weight:800;font-size:11.5px;transition:all .2s;
+  white-space:nowrap;text-transform:uppercase;letter-spacing:.5px;min-height:38px;
+}
+.sub-tab.active{background:var(--surface);color:var(--gold);box-shadow:0 2px 10px rgba(0,0,0,.35);}
+#tabClan .sub-tab.active{color:#dba8ff}
+.sub-tab:hover:not(.active){color:var(--text)}
+
+/* ═══════════════════════ GRIDS ═══════════════════════ */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+@media(max-width:700px){.grid2,.grid3,.grid4{grid-template-columns:1fr 1fr}}
+@media(max-width:400px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+
+/* ═══════════════════════ STAT / KPI CARDS ═══════════════════════ */
+.stat-card{
+  position:relative;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:15px 14px 14px;text-align:center;overflow:hidden;transition:border-color .2s,transform .2s;
+}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad-gold);}
+#tabClan .stat-card::before{background:var(--grad-purple);}
+.stat-card:hover{border-color:var(--border-soft);transform:translateY(-1px);}
+.stat-value{font-family:'Cinzel',serif;font-size:22px;font-weight:900;margin-bottom:4px;font-variant-numeric:tabular-nums;}
+.stat-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
+
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+@media(max-width:700px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
+.kpi{
+  position:relative;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:13px;text-align:center;overflow:hidden;
+}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad-blue);}
+.kpi-val{font-family:'Cinzel',serif;font-size:19px;font-weight:900;margin-bottom:2px;font-variant-numeric:tabular-nums;}
+.kpi-lbl{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
+
+/* ═══════════════════════ BATTLE CARDS ═══════════════════════ */
+.battle-item{
+  background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:13px 15px;margin-bottom:8px;display:grid;grid-template-columns:auto 1fr auto;
+  gap:13px;align-items:center;transition:border-color .2s,background .2s;
+}
+.battle-item:hover{border-color:var(--border-soft);background:var(--surface3);}
+.result-box{
+  width:36px;height:36px;border-radius:9px;display:flex;align-items:center;
+  justify-content:center;font-size:11px;font-weight:800;text-transform:uppercase;flex-shrink:0;
+}
+.result-box.win{background:rgba(34,197,94,.14);color:#4ade80;border:1px solid rgba(34,197,94,.32);}
+.result-box.loss{background:rgba(239,68,68,.14);color:#f87171;border:1px solid rgba(239,68,68,.32);}
+.result-box.draw{background:rgba(139,148,196,.12);color:var(--muted);border:1px solid rgba(139,148,196,.28);}
+.crowns{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:800;}
+
+/* ═══════════════════════ WAR BATTLE CARDS ═══════════════════════ */
+.war-battle{background:var(--surface2);border:1px solid var(--border);border-radius:11px;
+  margin-bottom:10px;overflow:hidden;transition:border-color .2s;}
+.war-battle:hover{border-color:rgba(184,92,242,.45);}
+.war-battle-header{display:grid;grid-template-columns:auto 1fr auto auto;gap:13px;align-items:center;
+  padding:13px 15px;cursor:pointer;}
+.war-battle-body{padding:0 15px 15px;border-top:1px solid rgba(42,48,102,.6);}
+.war-battle-body.hidden{display:none;}
+
+.deck-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px;}
+@media(max-width:500px){.deck-grid{grid-template-columns:repeat(2,1fr)}}
+.deck-card{
+  background:var(--bg);border:1px solid var(--border);border-radius:7px;
+  padding:7px 8px;text-align:center;font-size:11px;line-height:1.35;
+  transition:border-color .2s;
+}
+.deck-card:hover{border-color:var(--border-soft)}
+.deck-card-name{font-weight:700;color:var(--text);margin-bottom:2px;}
+.deck-card-lvl{color:var(--gold);font-size:10px;}
+.deck-card-elixir{color:#a78bfa;font-size:10px;}
+
+.war-section{margin-bottom:22px;}
+.war-section-title{
+  font-family:'Cinzel',serif;font-size:12.5px;font-weight:700;color:#dba8ff;
+  letter-spacing:.6px;margin-bottom:13px;padding-bottom:9px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+
+/* ═══════════════════════ FILTER BAR ═══════════════════════ */
+.filter-bar{
+  background:var(--surface);border:1px solid var(--border);border-radius:11px;
+  padding:14px 18px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;
+}
+.filter-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:800;}
+.period-btn{
+  padding:7px 14px;border:1px solid var(--border);border-radius:20px;background:transparent;
+  color:var(--muted);cursor:pointer;font-family:'Nunito',sans-serif;font-weight:800;font-size:11px;
+  transition:all .2s;text-transform:uppercase;letter-spacing:.5px;min-height:34px;
+}
+.period-btn.active{background:rgba(247,201,72,.14);color:var(--gold);border-color:var(--gold);}
+.period-btn:hover:not(.active){background:var(--surface2);color:var(--text);}
+.date-input{
+  background:var(--bg);border:1px solid var(--border);border-radius:9px;
+  padding:7px 10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:12px;outline:none;
+}
+.date-input:focus{border-color:var(--blue);}
+
+/* ═══════════════════════ CHARTS ═══════════════════════ */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:700px){.chart-grid{grid-template-columns:1fr}}
+.chart-card{
+  position:relative;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-1);
+}
+.chart-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad-blue);}
+.chart-card.full{grid-column:1/-1;}
+.chart-header{
+  background:linear-gradient(135deg,var(--surface2),rgba(77,124,251,.06));
+  border-bottom:1px solid var(--border);padding:11px 16px;
+}
+.chart-title{font-family:'Cinzel',serif;font-size:11.5px;font-weight:700;color:#9db8ff;letter-spacing:.4px;}
+.chart-body{padding:16px;}
+.chart-wrap{position:relative;height:220px;}
+.chart-wrap.tall{height:280px;}
+
+/* ═══════════════════════ TABELAS ═══════════════════════ */
+.summary-table,.war-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;}
+.summary-table th,.war-table th{
+  text-align:left;padding:8px 10px;color:var(--muted);text-transform:uppercase;
+  font-size:9.5px;letter-spacing:.6px;border-bottom:1px solid var(--border);font-weight:800;
+}
+.summary-table td,.war-table td{padding:9px 10px;border-bottom:1px solid rgba(42,48,102,.4);}
+.summary-table tr:last-child td,.war-table tr:last-child td{border-bottom:none;}
+.summary-table tr:hover td,.war-table tr:hover td{background:rgba(42,48,102,.25);}
+.war-table tr.highlight td{background:rgba(247,201,72,.06);}
+
+.member-row{
+  display:grid;grid-template-columns:28px 1fr auto auto;gap:10px;align-items:center;
+  padding:10px 14px;border-bottom:1px solid rgba(42,48,102,.5);transition:background .15s;
+}
+.member-row:last-child{border-bottom:none;}
+.member-row:hover{background:var(--surface3);}
+.member-rank{font-size:11px;color:var(--muted);font-weight:800;text-align:center;}
+.member-name{font-size:13px;font-weight:800;}
+.member-tag{font-size:11px;color:var(--muted);font-family:'SF Mono',Consolas,monospace;}
+.member-trophies{font-weight:800;font-size:13px;display:flex;align-items:center;gap:4px;}
+
+.race-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:15px;margin-bottom:12px;}
+.race-title{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#dba8ff;margin-bottom:10px;}
+
+hr{border:none;border-top:1px solid var(--border);margin:14px 0;}
+.ic{display:inline-block;width:1em;height:1em;vertical-align:-0.15em;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.empty{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty .icon{font-size:40px;margin-bottom:12px;opacity:.7}
+.hidden{display:none!important;}
+
+/* ═══════════════════════ PROGRESS / ELIXIR ═══════════════════════ */
+.prog-bar-bg{background:rgba(42,48,102,.7);border-radius:5px;height:6px;margin-top:4px;}
+.prog-bar{height:6px;border-radius:5px;transition:width .5s;}
+.elixir-dot{display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:#b85cf2;margin-right:3px;vertical-align:middle;}
+
+/* ═══════════════════════ LINKS ═══════════════════════ */
+a{color:#9db8ff}
