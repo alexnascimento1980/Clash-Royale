@@ -76,8 +76,8 @@
 <div class="main">
   <div class="api-card">
     <span class="api-label"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-key" width="24" height="24"></use></svg> API Key</span>
-    <input class="input" id="apiKey" type="password" placeholder="Cole sua chave da API do Clash Royale..."/>
-    <a href="https://developer.clashroyale.com/" target="_blank"
+    <input class="input" id="apiKey" type="password" aria-label="Chave da API" autocomplete="off" placeholder="Cole sua chave da API do Clash Royale..."/>
+    <a href="https://developer.clashroyale.com/" target="_blank" rel="noopener noreferrer"
        style="font-size:11px;color:#60a5fa;white-space:nowrap;text-decoration:none;">Obter chave →</a>
   </div>
   <div class="info-note">
@@ -90,17 +90,17 @@
     <button class="tab active" onclick="switchTab('player')"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-person" width="24" height="24"></use></svg> Jogador</button>
     <button class="tab"        onclick="switchTab('clan')"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-castle" width="24" height="24"></use></svg> Clã</button>
   </div>
-  <div class="error-box hidden" id="errorBox"></div>
+  <div class="error-box hidden" id="errorBox" role="alert"></div>
 
   <!-- ═══════════════════════ JOGADOR ═══════════════════════ -->
   <div id="tabPlayer">
     <div class="search-bar">
-      <input class="input" id="playerTag" placeholder="Tag do jogador (ex: #2PP)"
+      <input class="input" id="playerTag" aria-label="Tag do jogador" placeholder="Tag do jogador (ex: #2PP)"
              onkeydown="if(event.key==='Enter')searchPlayer()"/>
       <button class="btn btn-primary" id="btnPlayer" onclick="searchPlayer()"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-search" width="24" height="24"></use></svg> Buscar</button>
     </div>
     <div class="tag-hint"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-bulb" width="24" height="24"></use></svg> A tag está no perfil do jogador dentro do jogo</div>
-    <div class="spinner-wrap hidden" id="spinnerPlayer"><div class="spinner"></div></div>
+    <div class="spinner-wrap hidden" id="spinnerPlayer" role="status" aria-label="Carregando jogador"><div class="spinner"></div></div>
 
     <div id="playerResult" class="hidden">
       <div class="download-bar">
@@ -166,36 +166,36 @@
           </div>
           <div style="display:flex;gap:8px;align-items:center;margin-left:auto;flex-wrap:wrap">
             <span class="filter-label">Personalizado:</span>
-            <input type="date" class="date-input" id="pDateFrom" onchange="applyPlayerCustomRange()"/>
+            <input type="date" class="date-input" id="pDateFrom" aria-label="Data inicial" onchange="applyPlayerCustomRange()"/>
             <span style="color:var(--muted);font-size:12px">até</span>
-            <input type="date" class="date-input" id="pDateTo"   onchange="applyPlayerCustomRange()"/>
+            <input type="date" class="date-input" id="pDateTo" aria-label="Data final" onchange="applyPlayerCustomRange()"/>
           </div>
         </div>
         <div class="kpi-row" id="pKpis"></div>
         <div class="chart-grid">
           <div class="chart-card full">
             <div class="chart-header"><span class="chart-title"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-trophy" width="24" height="24"></use></svg> Troféus nas Batalhas ao Longo do Tempo</span></div>
-            <div class="chart-body"><div class="chart-wrap tall"><canvas id="chartTrophies"></canvas></div></div>
+            <div class="chart-body"><div class="chart-wrap tall"><canvas id="chartTrophies" role="img" aria-label="Gráfico de linha: troféus ao longo do tempo"></canvas></div></div>
           </div>
           <div class="chart-card">
             <div class="chart-header"><span class="chart-title"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-check" width="24" height="24"></use></svg> Resultados no Período</span></div>
-            <div class="chart-body"><div class="chart-wrap"><canvas id="chartResults"></canvas></div></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartResults" role="img" aria-label="Gráfico de rosca: vitórias, derrotas e empates no período"></canvas></div></div>
           </div>
           <div class="chart-card">
             <div class="chart-header"><span class="chart-title"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-crown" width="24" height="24"></use></svg> Coroas por Dia</span></div>
-            <div class="chart-body"><div class="chart-wrap"><canvas id="chartCrowns"></canvas></div></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartCrowns" role="img" aria-label="Gráfico de barras: coroas marcadas e sofridas por dia"></canvas></div></div>
           </div>
           <div class="chart-card">
             <div class="chart-header"><span class="chart-title"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-grid" width="24" height="24"></use></svg> Batalhas por Tipo</span></div>
-            <div class="chart-body"><div class="chart-wrap"><canvas id="chartTypes"></canvas></div></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartTypes" role="img" aria-label="Gráfico de rosca: batalhas por tipo"></canvas></div></div>
           </div>
           <div class="chart-card">
             <div class="chart-header"><span class="chart-title"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-arena" width="24" height="24"></use></svg> Taxa de Vitória por Arena</span></div>
-            <div class="chart-body"><div class="chart-wrap"><canvas id="chartArena"></canvas></div></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartArena" role="img" aria-label="Gráfico de barras: taxa de vitória por arena"></canvas></div></div>
           </div>
           <div class="chart-card full">
             <div class="chart-header"><span class="chart-title"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-calendar" width="24" height="24"></use></svg> Batalhas por Dia da Semana</span></div>
-            <div class="chart-body"><div class="chart-wrap"><canvas id="chartWeekday"></canvas></div></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartWeekday" role="img" aria-label="Gráfico de barras: batalhas e vitórias por dia da semana"></canvas></div></div>
           </div>
         </div>
       </div>
@@ -205,12 +205,12 @@
   <!-- ═══════════════════════ CLÃ ═══════════════════════ -->
   <div id="tabClan" class="hidden">
     <div class="search-bar">
-      <input class="input" id="clanTag" placeholder="Tag do clã (ex: #2PP)"
+      <input class="input" id="clanTag" aria-label="Tag do clã" placeholder="Tag do clã (ex: #2PP)"
              onkeydown="if(event.key==='Enter')searchClan()"/>
       <button class="btn btn-primary" id="btnClan" onclick="searchClan()"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-search" width="24" height="24"></use></svg> Buscar</button>
     </div>
     <div class="tag-hint"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-bulb" width="24" height="24"></use></svg> A tag do clã está na tela do clã dentro do jogo</div>
-    <div class="spinner-wrap hidden" id="spinnerClan"><div class="spinner"></div></div>
+    <div class="spinner-wrap hidden" id="spinnerClan" role="status" aria-label="Carregando clã"><div class="spinner"></div></div>
 
     <div id="clanResult" class="hidden">
       <div class="download-bar">
@@ -254,31 +254,31 @@
         <div class="chart-grid">
           <div class="chart-card full">
             <div class="chart-header"><span class="chart-title"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-anchor" width="24" height="24"></use></svg> Fama do Clã por Temporada</span></div>
-            <div class="chart-body"><div class="chart-wrap tall"><canvas id="chartClanFame"></canvas></div></div>
+            <div class="chart-body"><div class="chart-wrap tall"><canvas id="chartClanFame" role="img" aria-label="Gráfico de barras: fama do clã por temporada"></canvas></div></div>
           </div>
           <div class="chart-card">
             <div class="chart-header"><span class="chart-title"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-medal" width="24" height="24"></use></svg> Posição por Temporada</span></div>
-            <div class="chart-body"><div class="chart-wrap"><canvas id="chartClanRank"></canvas></div></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartClanRank" role="img" aria-label="Gráfico de linha: posição do clã por temporada"></canvas></div></div>
           </div>
           <div class="chart-card">
             <div class="chart-header"><span class="chart-title"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-people" width="24" height="24"></use></svg> Participantes por Temporada</span></div>
-            <div class="chart-body"><div class="chart-wrap"><canvas id="chartClanParticipants"></canvas></div></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartClanParticipants" role="img" aria-label="Gráfico de barras: participantes por temporada"></canvas></div></div>
           </div>
           <div class="chart-card full">
             <div class="chart-header"><span class="chart-title"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-trophy" width="24" height="24"></use></svg> Distribuição de Troféus dos Membros</span></div>
-            <div class="chart-body"><div class="chart-wrap"><canvas id="chartMemberTrophies"></canvas></div></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartMemberTrophies" role="img" aria-label="Gráfico de barras: membros por faixa de troféus"></canvas></div></div>
           </div>
           <div class="chart-card full">
             <div class="chart-header"><span class="chart-title"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-star" width="24" height="24"></use></svg> Top 15 Contribuidores de Fama</span></div>
-            <div class="chart-body"><div class="chart-wrap tall"><canvas id="chartTopContrib"></canvas></div></div>
+            <div class="chart-body"><div class="chart-wrap tall"><canvas id="chartTopContrib" role="img" aria-label="Gráfico de barras: maiores contribuidores de fama"></canvas></div></div>
           </div>
           <div class="chart-card">
             <div class="chart-header"><span class="chart-title"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-gift" width="24" height="24"></use></svg> Top 10 Doadores</span></div>
-            <div class="chart-body"><div class="chart-wrap"><canvas id="chartDonations"></canvas></div></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartDonations" role="img" aria-label="Gráfico de barras: maiores doadores da semana"></canvas></div></div>
           </div>
           <div class="chart-card">
             <div class="chart-header"><span class="chart-title"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-chart" width="24" height="24"></use></svg> Membros por Cargo</span></div>
-            <div class="chart-body"><div class="chart-wrap"><canvas id="chartRoles"></canvas></div></div>
+            <div class="chart-body"><div class="chart-wrap"><canvas id="chartRoles" role="img" aria-label="Gráfico de rosca: membros por cargo"></canvas></div></div>
           </div>
         </div>
       </div>
