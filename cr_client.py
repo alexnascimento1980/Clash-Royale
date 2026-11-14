@@ -13,6 +13,7 @@ Comparado à versão anterior (uma função `cr_get` que abria headers e fazia
 - centraliza o tratamento de erros de rede, devolvendo sempre um formato
   consistente: (dict, status_code).
 """
+import hashlib
 import time
 import threading
 from urllib.parse import quote
@@ -76,7 +77,18 @@ class _TTLCache:
         if config.CACHE_TTL_SECONDS <= 0:
             return
         with self._lock:
-            self._store[key] = (value, time.time() + config.CACHE_TTL_SECONDS)
+            now = time.time()
+            if len(self._store) >= config.CACHE_MAX_ENTRIES:
+                # 1º descarta expirados; se ainda estiver cheio, descarta o mais antigo
+                for k in [k for k, (_, exp) in self._store.items() if exp <= now]:
+                    del self._store[k]
+                while len(self._store) >= config.CACHE_MAX_ENTRIES:
+                    del self._store[min(self._store, key=lambda k: self._store[k][1])]
+            self._store[key] = (value, now + config.CACHE_TTL_SECONDS)
+
+    def clear(self):
+        with self._lock:
+            self._store.clear()
 
 
 _session = _build_session()
@@ -91,7 +103,13 @@ def cr_get(path: str, api_key: str, use_cache: bool = True):
     compatível com o formato de erro que a própria API da Supercell usa
     (e que o frontend já sabe ler via `data.message`).
     """
-    cache_key = (path, bool(api_key))
+    if not api_key:
+        return {"reason": "missingApiKey", "message": "Chave de API não informada."}, 401
+
+    # A chave entra (via hash) na chave do cache: sem isso, a resposta obtida
+    # com a chave válida de um usuário seria servida a quem usasse outra chave
+    # (inclusive inválida) enquanto o TTL não expirasse.
+    cache_key = (path, hashlib.sha256(api_key.encode("utf-8")).hexdigest())
     if use_cache:
         cached = _cache.get(cache_key)
         if cached is not None:

@@ -193,6 +193,18 @@ def download_clan_csv(tag):
     )
 
 
+# ── headers de segurança / cache ─────────────────────────
+@app.after_request
+def add_security_headers(resp):
+    resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+    resp.headers.setdefault("Referrer-Policy", "no-referrer")
+    # Respostas de /api e /download dependem da chave do usuário (e os downloads
+    # a trazem na URL): nunca devem ficar em cache de navegador/CDN.
+    if request.path.startswith(("/api/", "/download/")):
+        resp.headers["Cache-Control"] = "no-store"
+    return resp
+
+
 # ── handler genérico de erro (evita vazar stacktrace) ────
 @app.errorhandler(500)
 def handle_500(e):

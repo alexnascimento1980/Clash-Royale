@@ -59,13 +59,25 @@ Aplicativo web para consultar e analisar dados de jogadores e clãs do Clash Roy
 ## 📁 Estrutura do Projeto
 
 ```
-clash-royale/
+Clash-Royale/
 │
-├── app.py                  # Servidor Flask (backend / proxy / downloads)
+├── app.py                  # Rotas Flask (proxy, downloads, headers de segurança)
+├── config.py               # Configuração via variáveis de ambiente
+├── cr_client.py            # Cliente da API (sessão com retry, cache TTL, validação de tag)
+├── csv_export.py           # Geração dos CSVs (com proteção contra injeção de fórmula)
 ├── requirements.txt        # Dependências Python
+├── requirements-dev.txt    # Dependências de desenvolvimento (pytest)
+├── vercel.json             # Deploy serverless na Vercel
 │
-└── templates/
-    └── index.html          # Interface completa (HTML + CSS + JS)
+├── api/
+│   └── index.py            # Entry point da Vercel (reexporta o app de app.py)
+├── templates/
+│   └── index.html          # Estrutura da interface
+├── static/
+│   ├── css/style.css
+│   └── js/app.js
+└── tests/
+    └── test_app.py         # Testes do backend (sem acesso à rede)
 ```
 
 ---
@@ -81,15 +93,11 @@ clash-royale/
 
 ## 🚀 Instalação e Execução
 
-### 1. Clone ou baixe os arquivos
+### 1. Clone o repositório
 
-Certifique-se de que a estrutura de pastas está correta:
-```
-clash-royale/
-├── app.py
-├── requirements.txt
-└── templates/
-    └── index.html
+```bash
+git clone https://github.com/alexnascimento1980/Clash-Royale.git
+cd Clash-Royale
 ```
 
 ### 2. Instale as dependências
@@ -109,6 +117,13 @@ Você verá no terminal:
 ✅ Clash Royale Tracker rodando em http://localhost:5000
 ```
 
+### Testes
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
 ### 4. Abra no navegador
 
 ```
@@ -119,18 +134,37 @@ http://localhost:5000
 
 ## 🔑 Configuração da API Key
 
-A API do Clash Royale exige uma chave de autenticação vinculada ao seu IP público.
+A API do Clash Royale exige uma chave de autenticação vinculada a um IP. Por padrão, este projeto **não** chama a API oficial diretamente: ele usa o proxy público da [RoyaleAPI](https://docs.royaleapi.com/proxy.html) (`https://proxy.royaleapi.dev/v1`), que tem IP fixo. Isso é necessário na Vercel, onde o IP de saída muda a cada execução.
 
-### Passo a passo
+### Passo a passo (padrão — proxy da RoyaleAPI)
 
 1. Acesse [developer.clashroyale.com](https://developer.clashroyale.com) e faça login
 2. Clique em **"My Account"** → **"Create New Key"**
-3. Descubra seu IP público em [meuip.com.br](https://meuip.com.br)
-4. Preencha o campo **"Allowed IP Addresses"** com seu IP público (ex: `189.45.123.67`)
-5. Salve e copie a chave gerada
-6. Cole a chave no campo **🔑 API Key** no topo do aplicativo
+3. No campo **"Allowed IP Addresses"** informe o IP do proxy: `45.79.218.79`
+4. Salve e copie a chave gerada
+5. Cole a chave no campo **🔑 API Key** no topo do aplicativo
 
-> ⚠️ **IP Dinâmico:** A maioria dos provedores residenciais muda o IP periodicamente. Quando isso ocorrer, volte ao portal, edite a chave e atualize o IP. O erro retornado pela API nesse caso é HTTP 403.
+### Usando a API oficial direto (servidor com IP fixo)
+
+Defina `CR_BASE_URL=https://api.clashroyale.com/v1` e cadastre na chave o **IP público** do seu servidor (descubra em [meuip.com.br](https://meuip.com.br)). Nesse modo, se o seu provedor mudar o IP, a API devolve HTTP 403 e é preciso atualizar a chave no portal.
+
+### Variáveis de ambiente
+
+| Variável | Padrão | Descrição |
+|---|---|---|
+| `CR_BASE_URL` | `https://proxy.royaleapi.dev/v1` | URL base da API |
+| `CR_TIMEOUT` | `10` | Timeout por chamada (segundos) |
+| `CR_MAX_RETRIES` | `2` | Tentativas em erro transitório (502/503/504, timeout) |
+| `CACHE_TTL_SECONDS` | `60` | TTL do cache em memória (`0` desativa) |
+| `CACHE_MAX_ENTRIES` | `256` | Limite de entradas do cache |
+| `FLASK_DEBUG` | `0` | `1` ativa o debug (nunca em produção) |
+| `FLASK_HOST` / `FLASK_PORT` | `0.0.0.0` / `5000` | Endereço do servidor local |
+
+---
+
+## ☁️ Deploy na Vercel
+
+O `vercel.json` aponta para `api/index.py`, que reexporta o app Flask. Basta importar o repositório na Vercel — não é necessário configurar a chave de API no servidor, pois ela é digitada na interface.
 
 ---
 
@@ -244,8 +278,8 @@ A API oficial retorna apenas as **últimas 25 batalhas** de cada jogador. Não e
 ### Datas de Entrada/Saída de Membros
 A API **não fornece** histórico de quando membros entraram ou saíram de um clã. O endpoint `/members` retorna apenas os membros presentes no momento da consulta. Para monitorar movimentações seria necessário salvar snapshots periódicos e comparar os dados.
 
-### IP Público Obrigatório
-IPs privados (127.0.0.1, 192.168.x.x) são rejeitados pelo portal de desenvolvedores. Use sempre o IP público da máquina. Em caso de erro **403**, atualize o IP cadastrado na chave.
+### IP Autorizado na Chave
+A chave precisa autorizar o IP de quem faz a chamada: `45.79.218.79` ao usar o proxy da RoyaleAPI (padrão) ou o IP público do servidor ao usar a API oficial. Erro **403** indica IP não autorizado ou chave inválida.
 
 ### Rate Limiting
 A API tem limite de requisições por intervalo de tempo. Em caso de erro **429 (Too Many Requests)**, aguarde alguns segundos antes de tentar novamente.
@@ -254,7 +288,7 @@ A API tem limite de requisições por intervalo de tempo. Em caso de erro **429 
 
 ## 🧩 Estrutura do Código
 
-### app.py — Rotas Principais
+### Rotas (app.py)
 
 | Rota | Método | Descrição |
 |---|---|---|
@@ -274,6 +308,16 @@ A API tem limite de requisições por intervalo de tempo. Em caso de erro **429 
 A API Key é transmitida de duas formas:
 - **Consultas normais:** Header HTTP `X-Api-Key` (enviado pelo `fetch` do JavaScript)
 - **Downloads:** Query parameter `?key=...` (necessário por ser navegação direta via `window.location.href`)
+
+Sem chave, o backend responde **401** sem chamar a API externa. As respostas de `/api/*` e `/download/*` saem com `Cache-Control: no-store`.
+
+> ⚠️ Como a chave vai na URL dos downloads, ela pode aparecer em logs de acesso do servidor/Vercel. Use uma chave dedicada a este app.
+
+### Segurança
+
+- **XSS:** textos vindos da API (nomes, tags, cartas) são escapados (`esc()` em `static/js/app.js`) antes de entrar no DOM.
+- **CSV injection:** células de texto iniciadas por `=`, `+`, `-`, `@` ganham um apóstrofo (`csv_export.safe_cell`), evitando execução de fórmulas no Excel/Sheets.
+- **Cache:** a chave do cache inclui o hash da API Key, então uma resposta nunca é servida a outra chave.
 
 ---
 
