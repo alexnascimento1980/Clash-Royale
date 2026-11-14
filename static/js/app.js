@@ -34,14 +34,18 @@ function esc(v){
 }
 function apiKey(){ return $('apiKey').value.trim() }
 function trophyColor(t){ return t>=7000?'#ff4da6':t>=5000?'#ffd700':t>=3000?'#c0c0c0':'#cd7f32' }
-function fmtDate(ts){
-  const s=String(ts); if(s.length<8) return s
-  const h=s.length>9?s.slice(9,11):'00', m=s.length>11?s.slice(11,13):'00'
-  return `${s.slice(6,8)}/${s.slice(4,6)}/${s.slice(0,4)} ${h}:${m}`
-}
+// battleTime vem da API em UTC (ex: 20261114T182300.000Z). Lemos como UTC e
+// exibimos no fuso do navegador — antes o texto era tratado como horário local,
+// o que deslocava horários e dias (ex: 3h no Brasil) nos gráficos por dia.
 function parseTs(ts){
   const s=String(ts); if(s.length<8) return null
-  return new Date(`${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}T${s.length>9?s.slice(9,11):'00'}:${s.length>11?s.slice(11,13):'00'}:00`)
+  const t=s.length>9?`${s.slice(9,11)}:${s.slice(11,13)||'00'}:${s.slice(13,15)||'00'}`:'00:00:00'
+  const d=new Date(`${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}T${t}Z`)
+  return isNaN(d.getTime())?null:d
+}
+function fmtDate(ts){
+  const d=parseTs(ts); if(!d) return String(ts)
+  return d.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).replace(',','')
 }
 function showError(msg){const el=$('errorBox');el.innerHTML=ic('warning')+' ';el.append(msg);el.classList.remove('hidden')}
 function clearError(){$('errorBox').classList.add('hidden')}
@@ -50,6 +54,11 @@ async function apiFetch(url){
   const data=await res.json()
   if(!res.ok) throw new Error(data.message||`Erro ${res.status}`)
   return data
+}
+// Mantém aria-pressed em sincronia com a classe .active (leitores de tela)
+function syncPressed(){
+  document.querySelectorAll('.tab,.sub-tab,.period-btn').forEach(el=>
+    el.setAttribute('aria-pressed',el.classList.contains('active')?'true':'false'))
 }
 function destroyChart(id){if(chartInstances[id]){chartInstances[id].destroy();delete chartInstances[id]}}
 function emptyState(icon,msg){return `<div class="empty"><div class="icon">${icon}</div><p>${msg}</p></div>`}
@@ -74,17 +83,20 @@ function switchTab(tab){
   document.querySelectorAll('.tabs .tab').forEach((el,i)=>{
     el.classList.toggle('active',(tab==='player'&&i===0)||(tab==='clan'&&i===1))
   })
+  syncPressed()
 }
 function switchPlayerTab(tab){
   const tabs=['profile','battles','wars','tournaments','charts']
   tabs.forEach(t=>$('pt'+t[0].toUpperCase()+t.slice(1)).classList.toggle('hidden',t!==tab))
   document.querySelectorAll('#tabPlayer .sub-tab').forEach((el,i)=>el.classList.toggle('active',i===tabs.indexOf(tab)))
+  syncPressed()
   if(tab==='charts') renderPlayerCharts()
 }
 function switchClanTab(tab){
   const tabs=['info','members','wars','charts']
   tabs.forEach(t=>$('ct'+t[0].toUpperCase()+t.slice(1)).classList.toggle('hidden',t!==tab))
   document.querySelectorAll('#tabClan .sub-tab').forEach((el,i)=>el.classList.toggle('active',i===tabs.indexOf(tab)))
+  syncPressed()
   if(tab==='charts') renderClanCharts()
 }
 
@@ -92,16 +104,16 @@ function switchClanTab(tab){
 function setPlayerPeriod(days,btn){
   playerPeriodDays=days;$('pDateFrom').value='';$('pDateTo').value=''
   document.querySelectorAll('#ptCharts .period-btn').forEach(b=>b.classList.remove('active'))
-  btn.classList.add('active');renderPlayerCharts()
+  btn.classList.add('active');syncPressed();renderPlayerCharts()
 }
 function applyPlayerCustomRange(){
   playerPeriodDays=-1
   document.querySelectorAll('#ptCharts .period-btn').forEach(b=>b.classList.remove('active'))
-  renderPlayerCharts()
+  syncPressed();renderPlayerCharts()
 }
 function filterBattlesByPeriod(battles){
   const now=new Date()
-  const from=$('pDateFrom').value?new Date($('pDateFrom').value):null
+  const from=$('pDateFrom').value?new Date($('pDateFrom').value+'T00:00:00'):null
   const to  =$('pDateTo').value  ?new Date($('pDateTo').value+'T23:59:59'):null
   return battles.filter(b=>{
     const d=parseTs(b.battleTime); if(!d) return false
@@ -115,7 +127,7 @@ function filterBattlesByPeriod(battles){
 function setClanPeriod(n,btn){
   clanPeriodCount=n
   document.querySelectorAll('#ctCharts .period-btn').forEach(b=>b.classList.remove('active'))
-  btn.classList.add('active');renderClanCharts()
+  btn.classList.add('active');syncPressed();renderClanCharts()
 }
 function filterWarlog(w){ return clanPeriodCount<=0?w:w.slice(0,clanPeriodCount) }
 
@@ -223,6 +235,7 @@ function renderWarSection(wars){
   const losses=wars.filter(b=>(b.team?.[0]?.crowns??0)<(b.opponent?.[0]?.crowns??0)).length
   const draws =wars.length-wins-losses
   const winRate=wars.length?((wins/wars.length)*100).toFixed(1):0
+  const pvpWins=pvp.filter(b=>(b.team?.[0]?.crowns??0)>(b.opponent?.[0]?.crowns??0)).length
   const totalCrowns=wars.filter(b=>b.type!=='boatBattle').reduce((s,b)=>s+(b.team?.[0]?.crowns??0),0)
   const avgCrowns=pvp.length?(totalCrowns/pvp.length).toFixed(1):0
 
@@ -241,7 +254,7 @@ function renderWarSection(wars){
   const kpiData=[
     {v:wars.length,     l:'Batalhas de Guerra', c:'#60a5fa'},
     {v:`${winRate}%`,   l:'Taxa de Vitória',    c:'#4ade80'},
-    {v:wins,            l:'Vitórias PvP',        c:'#4ade80'},
+    {v:pvpWins,         l:'Vitórias PvP',        c:'#4ade80'},
     {v:totalCrowns,     l:'Coroas Marcadas',     c:trophyColor(4000)},
     {v:pvp.length,      l:'Batalhas PvP',        c:'#f5c842'},
     {v:boat.length,     l:'Ataques ao Barco',    c:'#fb923c'},
@@ -258,15 +271,15 @@ function renderWarSection(wars){
   html+=`<div class="chart-grid" style="margin-bottom:16px">
     <div class="chart-card">
       <div class="chart-header"><span class="chart-title">${ic('check')} Resultados nas Guerras</span></div>
-      <div class="chart-body"><div class="chart-wrap"><canvas id="chartWarResults"></canvas></div></div>
+      <div class="chart-body"><div class="chart-wrap"><canvas id="chartWarResults" role="img" aria-label="Gráfico de rosca: vitórias, derrotas e empates nas guerras"></canvas></div></div>
     </div>
     <div class="chart-card">
       <div class="chart-header"><span class="chart-title">${ic('sword')} PvP vs ${ic('boat')} Barco vs Outros</span></div>
-      <div class="chart-body"><div class="chart-wrap"><canvas id="chartWarTypes"></canvas></div></div>
+      <div class="chart-body"><div class="chart-wrap"><canvas id="chartWarTypes" role="img" aria-label="Gráfico de rosca: batalhas PvP, de barco e outras"></canvas></div></div>
     </div>
     <div class="chart-card full">
       <div class="chart-header"><span class="chart-title">${ic('crown')} Coroas por Batalha de Guerra (Cronológico)</span></div>
-      <div class="chart-body"><div class="chart-wrap"><canvas id="chartWarCrowns"></canvas></div></div>
+      <div class="chart-body"><div class="chart-wrap"><canvas id="chartWarCrowns" role="img" aria-label="Gráfico de barras: coroas marcadas e sofridas por batalha de guerra"></canvas></div></div>
     </div>
   </div>`
 
@@ -274,7 +287,7 @@ function renderWarSection(wars){
   if(pvp.length){
     html+=`<div class="war-section">
       <div class="war-section-title">${ic('sword')} Batalhas PvP (River Race) — ${pvp.length} batalhas
-        <span class="badge badge-purple" style="margin-left:auto">${((wins/pvp.length)*100).toFixed(0)}% vitórias</span>
+        <span class="badge badge-purple" style="margin-left:auto">${((pvpWins/pvp.length)*100).toFixed(0)}% vitórias</span>
       </div>
       ${pvp.map((b,i)=>warBattleCard(b,i,'pvp')).join('')}
     </div>`
@@ -385,7 +398,8 @@ function warBattleCard(b,idx,tipo){
   }
 
   return `<div class="war-battle">
-    <div class="war-battle-header" onclick="toggleWarBattle('${id}')">
+    <div class="war-battle-header" id="wbh-${id}" role="button" tabindex="0" aria-expanded="false" aria-controls="${id}"
+         onclick="toggleWarBattle('${id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleWarBattle('${id}')}">
       <div class="result-box ${r}">${l}</div>
       <div style="min-width:0">
         <div style="font-size:13px;font-weight:700;margin-bottom:2px">
@@ -444,6 +458,7 @@ function toggleWarBattle(id){
   const isHidden=body.classList.contains('hidden')
   body.classList.toggle('hidden',!isHidden)
   if(arr) arr.textContent=isHidden?'▲':'▼'
+  $('wbh-'+id)?.setAttribute('aria-expanded',isHidden?'true':'false')
 }
 
 // ══════════════════════════════════════════════════════════
@@ -735,10 +750,12 @@ function renderClanCharts(){
     const our=(r.standings||[]).find(s=>s.clan?.tag===c.tag)
     if(!our) return
     ;(our.clan?.participants||[]).forEach(p=>{
-      fameTotals[p.name]=(fameTotals[p.name]||0)+(p.fame||0)
+      const k=p.tag||p.name
+      fameTotals[k]=fameTotals[k]||{name:p.name,total:0}
+      fameTotals[k].total+=(p.fame||0)
     })
   })
-  const topC=Object.entries(fameTotals).sort((a,b)=>b[1]-a[1]).slice(0,15)
+  const topC=Object.values(fameTotals).sort((a,b)=>b.total-a.total).slice(0,15).map(x=>[x.name,x.total])
   destroyChart('chartTopContrib')
   chartInstances['chartTopContrib']=new Chart($('chartTopContrib'),{
     type:'bar',
@@ -774,3 +791,17 @@ function renderClanCharts(){
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}
   })
 }
+
+
+// ── INICIALIZAÇÃO ──────────────────────────────────────
+// A chave fica só em sessionStorage (apagada ao fechar a aba), para não
+// precisar colar de novo ao recarregar a página. try/catch: o storage pode
+// estar bloqueado pelo navegador.
+document.addEventListener('DOMContentLoaded',()=>{
+  const input=$('apiKey')
+  try{ const saved=sessionStorage.getItem('sentinela.apiKey'); if(saved) input.value=saved }catch(e){}
+  input.addEventListener('input',()=>{
+    try{ sessionStorage.setItem('sentinela.apiKey',input.value.trim()) }catch(e){}
+  })
+  syncPressed()
+})
