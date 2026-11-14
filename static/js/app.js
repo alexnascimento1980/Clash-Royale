@@ -90,6 +90,7 @@ function switchPlayerTab(tab){
   tabs.forEach(t=>$('pt'+t[0].toUpperCase()+t.slice(1)).classList.toggle('hidden',t!==tab))
   document.querySelectorAll('#tabPlayer .sub-tab').forEach((el,i)=>el.classList.toggle('active',i===tabs.indexOf(tab)))
   syncPressed()
+  document.querySelector('#tabPlayer .sub-tab.active')?.scrollIntoView({inline:'center',block:'nearest'})
   if(tab==='charts') renderPlayerCharts()
 }
 function switchClanTab(tab){
@@ -97,6 +98,7 @@ function switchClanTab(tab){
   tabs.forEach(t=>$('ct'+t[0].toUpperCase()+t.slice(1)).classList.toggle('hidden',t!==tab))
   document.querySelectorAll('#tabClan .sub-tab').forEach((el,i)=>el.classList.toggle('active',i===tabs.indexOf(tab)))
   syncPressed()
+  document.querySelector('#tabClan .sub-tab.active')?.scrollIntoView({inline:'center',block:'nearest'})
   if(tab==='charts') renderClanCharts()
 }
 
@@ -208,7 +210,7 @@ function simpleBattleCard(b){
   return `<div class="battle-item">
     <div class="result-box ${r}">${l}</div>
     <div>
-      <div style="font-size:13px;font-weight:700;margin-bottom:2px">vs ${esc(opName)}
+      <div class="bi-name">vs ${esc(opName)}
         <span style="font-size:10px;color:var(--muted);font-family:monospace">${esc(opTag)}</span></div>
       <div style="font-size:11px;color:var(--muted)">${esc(b.arena?.name||'')} · ${fmtDate(b.battleTime)}
         · <span class="badge badge-gray" style="font-size:10px">${esc(b.type)}</span></div>
@@ -394,7 +396,7 @@ function warBattleCard(b,idx,tipo){
     if(!kingHP&&!princessHP.length) return ''
     const pts=[kingHP?`${ic('crown')} ${kingHP}HP`:'',
       ...princessHP.map((h,i)=>`${ic('tower')}${i+1} ${h}HP`)].filter(Boolean).join('  ')
-    return `<span style="font-size:10px;color:var(--muted)">${pts}</span>`
+    return `<span class="wb-tower-info">${pts}</span>`
   }
 
   return `<div class="war-battle">
@@ -402,7 +404,7 @@ function warBattleCard(b,idx,tipo){
          onclick="toggleWarBattle('${id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleWarBattle('${id}')}">
       <div class="result-box ${r}">${l}</div>
       <div style="min-width:0">
-        <div style="font-size:13px;font-weight:700;margin-bottom:2px">
+        <div class="bi-name">
           ${typeIco} vs ${esc(opName)}
           <span style="font-size:10px;color:var(--muted);font-family:monospace">${esc(opTag)}</span>
         </div>

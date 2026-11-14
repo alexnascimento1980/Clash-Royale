@@ -291,7 +291,7 @@ body{
 /* ═══════════════════════ BATTLE CARDS ═══════════════════════ */
 .battle-item{
   background:var(--surface2);border:1px solid var(--border);border-radius:10px;
-  padding:13px 15px;margin-bottom:8px;display:grid;grid-template-columns:auto 1fr auto;
+  padding:13px 15px;margin-bottom:8px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;
   gap:13px;align-items:center;transition:border-color .2s,background .2s;
 }
 .battle-item:hover{border-color:var(--border-soft);background:var(--surface3);}
@@ -308,7 +308,7 @@ body{
 .war-battle{background:var(--surface2);border:1px solid var(--border);border-radius:11px;
   margin-bottom:10px;overflow:hidden;transition:border-color .2s;}
 .war-battle:hover{border-color:rgba(184,92,242,.45);}
-.war-battle-header{display:grid;grid-template-columns:auto 1fr auto auto;gap:13px;align-items:center;
+.war-battle-header{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:13px;align-items:center;
   padding:13px 15px;cursor:pointer;}
 .war-battle-body{padding:0 15px 15px;border-top:1px solid rgba(42,48,102,.6);}
 .war-battle-body.hidden{display:none;}
@@ -410,3 +410,48 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0;}
 a{color:#9db8ff}
 
 .app-footer{max-width:1100px;margin:32px auto 24px;padding:0 16px;text-align:center;font-size:11px;color:var(--muted);line-height:1.5;}
+
+/* nomes vindos da API podem ser longos e sem espaços */
+.bi-name{font-size:13px;font-weight:700;margin-bottom:2px;overflow-wrap:anywhere}
+.wb-tower-info{font-size:11px;color:var(--muted)}
+
+/* ═══════════════════════ CELULAR ═══════════════════════ */
+@media(max-width:700px){
+  body{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+  .tabs{bottom:calc(12px + env(safe-area-inset-bottom))}
+
+  /* 16px evita o zoom automático do iOS ao focar um campo */
+  .input,.date-input{font-size:16px}
+
+  /* campos em flex precisam poder encolher (senão empurram o botão Buscar) */
+  .search-bar .input{min-width:0}
+  /* telas estreitas (320px): barra inferior sem estourar */
+  .tab{padding:11px 8px;min-width:0;font-size:12px;letter-spacing:.3px}
+
+  /* alvos de toque maiores */
+  .sub-tab{min-height:44px}
+  .period-btn{min-height:40px;padding:8px 14px}
+
+  /* abas roláveis: encaixam no lugar e mostram que há mais itens */
+  .sub-tabs{scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+    -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 14px,#000 calc(100% - 14px),transparent 100%);
+            mask-image:linear-gradient(90deg,transparent 0,#000 14px,#000 calc(100% - 14px),transparent 100%)}
+  .sub-tab{scroll-snap-align:center}
+
+  /* cartões de estatística: 2 colunas mesmo em telas < 400px */
+  #pStats{grid-template-columns:1fr 1fr!important;gap:10px}
+  #pStats .stat-card{padding:14px 10px}
+
+  /* KPIs de guerra (grid4 com estilo inline de 4 colunas) */
+  #warContent .grid4{grid-template-columns:repeat(2,1fr)!important}
+
+  /* filtro de período: datas lado a lado, largura total */
+  .filter-bar{padding:12px 14px}
+  .filter-bar>div:last-child{margin-left:0!important;width:100%}
+  .filter-bar .date-input{flex:1;min-width:0}
+
+  .war-battle-header{gap:10px;padding:12px}
+  .war-battle-body{padding:0 12px 12px}
+  .wb-tower-info{font-size:12px;line-height:1.7}
+  .deck-card-lvl,.deck-card-elixir{font-size:11px}
+}
