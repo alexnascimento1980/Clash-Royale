@@ -61,7 +61,7 @@ Aplicativo web para consultar e analisar dados de jogadores e clãs do Clash Roy
 ## 📁 Estrutura do Projeto
 
 ```
-Clash-Royale/
+sentinela/
 │
 ├── app.py                  # Rotas Flask (proxy, downloads, headers de segurança)
 ├── config.py               # Configuração via variáveis de ambiente
@@ -98,8 +98,8 @@ Clash-Royale/
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/alexnascimento1980/Clash-Royale.git
-cd Clash-Royale
+git clone https://github.com/alexnascimento1980/sentinela.git
+cd sentinela
 ```
 
 ### 2. Instale as dependências
