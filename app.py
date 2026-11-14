@@ -1,5 +1,5 @@
 """
-Clash Royale Tracker — backend Flask.
+Sentinela — backend Flask (status de jogador e guerra para Clash).
 
 Mudanças em relação à versão anterior (mesmo contrato de rotas, então o
 frontend não precisa mudar nada):
@@ -212,5 +212,5 @@ def handle_500(e):
 
 
 if __name__ == "__main__":
-    print(f"✅ Clash Royale Tracker rodando em http://localhost:{config.FLASK_PORT}")
+    print(f"✅ Sentinela rodando em http://localhost:{config.FLASK_PORT}")
     app.run(host=config.FLASK_HOST, port=config.FLASK_PORT, debug=config.FLASK_DEBUG)

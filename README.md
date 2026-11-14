@@ -1,4 +1,6 @@
-# ⚔️ Clash Royale Tracker
+# 🛡️ Sentinela
+
+**Status de jogador e guerra para Clash.**
 
 Aplicativo web para consultar e analisar dados de jogadores e clãs do Clash Royale, com histórico de batalhas, guerras, gráficos de desempenho e exportação de dados.
 
@@ -114,7 +116,7 @@ python app.py
 
 Você verá no terminal:
 ```
-✅ Clash Royale Tracker rodando em http://localhost:5000
+✅ Sentinela rodando em http://localhost:5000
 ```
 
 ### Testes
@@ -324,4 +326,5 @@ Sem chave, o backend responde **401** sem chamar a API externa. As respostas de 
 ## 📄 Licença
 
 Projeto de uso pessoal. Dados fornecidos pela [API Oficial do Clash Royale](https://developer.clashroyale.com).  
+Sentinela é um projeto de fã, não afiliado, endossado nem patrocinado pela Supercell.  
 Clash Royale é marca registrada da Supercell Oy.
