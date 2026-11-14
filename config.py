@@ -28,6 +28,11 @@ CR_MAX_RETRIES = int(os.environ.get("CR_MAX_RETRIES", "2"))
 # estiver "quente", então trate como otimização best-effort, não garantia.
 CACHE_TTL_SECONDS = int(os.environ.get("CACHE_TTL_SECONDS", "60"))
 
+# Máximo de entradas no cache em memória (evita crescimento sem limite em
+# processos de longa duração). Ao estourar, expirados saem primeiro e depois
+# as entradas mais antigas.
+CACHE_MAX_ENTRIES = int(os.environ.get("CACHE_MAX_ENTRIES", "256"))
+
 # Debug do Flask. Por padrão DESLIGADO — nunca deve ir True em produção
 # (expõe o debugger interativo do Werkzeug, que permite execução de código).
 FLASK_DEBUG = os.environ.get("FLASK_DEBUG", "0") == "1"

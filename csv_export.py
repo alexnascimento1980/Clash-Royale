@@ -11,6 +11,32 @@ import csv
 import io
 
 
+_FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
+def safe_cell(value):
+    """Neutraliza injeção de fórmula em planilhas (CSV injection).
+
+    Nomes de jogadores/clãs são controlados por terceiros; um nome como
+    `=HYPERLINK(...)` seria executado ao abrir o CSV no Excel/Sheets.
+    Textos que começam com =, +, -, @, tab ou CR ganham um apóstrofo na frente.
+    Números e outros tipos passam inalterados.
+    """
+    if isinstance(value, str) and value.startswith(_FORMULA_PREFIXES):
+        return "'" + value
+    return value
+
+
+class _SafeWriter:
+    """Envolve csv.writer aplicando safe_cell em todas as células."""
+
+    def __init__(self, fileobj):
+        self._w = csv.writer(fileobj)
+
+    def writerow(self, row):
+        self._w.writerow([safe_cell(c) for c in row])
+
+
 def fmt_date(ts) -> str:
     s = str(ts)
     if len(s) < 8:
@@ -51,7 +77,7 @@ def _to_csv_response_text(output: io.StringIO) -> str:
 
 def build_player_csv(player: dict, battles: list) -> str:
     output = io.StringIO()
-    w = csv.writer(output)
+    w = _SafeWriter(output)
 
     clan = player.get("clan", {}) or {}
     league = player.get("leagueStatistics", {}) or {}
@@ -170,7 +196,7 @@ CLAN_TYPE_LABELS = {"open": "Aberto", "inviteOnly": "Apenas Convite", "closed": 
 
 def build_clan_csv(clan: dict, members: list, warlog: list) -> str:
     output = io.StringIO()
-    w = csv.writer(output)
+    w = _SafeWriter(output)
     location = clan.get("location") or {}
 
     _write_kv_section(w, "INFORMAÇÕES DO CLÃ", [

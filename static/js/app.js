@@ -26,6 +26,12 @@ function ic(name){
 }
 
 // ── UTILS ──────────────────────────────────────────────
+// Escapa texto vindo da API (nomes de jogador/clã, tags, cartas...) antes de
+// interpolar em template strings que vão para innerHTML — nomes são livres e
+// controlados por outros jogadores, então sem isso viram vetor de XSS.
+function esc(v){
+  return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
+}
 function apiKey(){ return $('apiKey').value.trim() }
 function trophyColor(t){ return t>=7000?'#ff4da6':t>=5000?'#ffd700':t>=3000?'#c0c0c0':'#cd7f32' }
 function fmtDate(ts){
@@ -142,7 +148,7 @@ function renderPlayer(p,blog){
   $('pTrophies').innerHTML =`<span style="font-size:13px;font-weight:700;color:${trophyColor(p.trophies)}">${ic('trophy')} ${(p.trophies||0).toLocaleString()} Troféus</span>`
   $('pBest').innerHTML     =`<span style="font-size:13px;font-weight:700;color:#fbbf24">${ic('star')} ${(p.bestTrophies||0).toLocaleString()} Máx.</span>`
   $('pLevel').innerHTML  =`${ic('crown')} Nível ${p.expLevel}`
-  $('pClanBadge').innerHTML=p.clan?`<span class="badge badge-purple">${ic('castle')} ${p.clan.name}</span>`:`<span class="badge badge-gray">Sem Clã</span>`
+  $('pClanBadge').innerHTML=p.clan?`<span class="badge badge-purple">${ic('castle')} ${esc(p.clan.name)}</span>`:`<span class="badge badge-gray">Sem Clã</span>`
 
   $('pStats').innerHTML=[
     {v:p.trophies,l:`${ic('trophy')} Troféus`,c:trophyColor(p.trophies)},
@@ -160,9 +166,9 @@ function renderPlayer(p,blog){
       <div style="width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#4f46e5);
         display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${ic('shield')}</div>
       <div>
-        <div style="font-family:'Cinzel',serif;font-size:15px;font-weight:700;margin-bottom:3px">${p.clan.name}</div>
-        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-bottom:6px">${p.clan.tag}</div>
-        <span class="badge badge-purple">${ROLES[p.role]||p.role}</span>
+        <div style="font-family:'Cinzel',serif;font-size:15px;font-weight:700;margin-bottom:3px">${esc(p.clan.name)}</div>
+        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-bottom:6px">${esc(p.clan.tag)}</div>
+        <span class="badge badge-purple">${esc(ROLES[p.role]||p.role)}</span>
       </div>
     </div></div>`:''
 
@@ -190,10 +196,10 @@ function simpleBattleCard(b){
   return `<div class="battle-item">
     <div class="result-box ${r}">${l}</div>
     <div>
-      <div style="font-size:13px;font-weight:700;margin-bottom:2px">vs ${opName}
-        <span style="font-size:10px;color:var(--muted);font-family:monospace">${opTag}</span></div>
-      <div style="font-size:11px;color:var(--muted)">${b.arena?.name||''} · ${fmtDate(b.battleTime)}
-        · <span class="badge badge-gray" style="font-size:10px">${b.type}</span></div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:2px">vs ${esc(opName)}
+        <span style="font-size:10px;color:var(--muted);font-family:monospace">${esc(opTag)}</span></div>
+      <div style="font-size:11px;color:var(--muted)">${esc(b.arena?.name||'')} · ${fmtDate(b.battleTime)}
+        · <span class="badge badge-gray" style="font-size:10px">${esc(b.type)}</span></div>
     </div>
     <div class="crowns"><span style="color:#4ade80">${myC}</span><span style="color:var(--gold)">${ic('crown')}</span><span style="color:#f87171">${opC}</span></div>
   </div>`
@@ -288,7 +294,7 @@ function renderWarSection(wars){
   // ── Outros tipos de guerra ──
   if(other.length){
     html+=`<div class="war-section">
-      <div class="war-section-title">${ic('flag')} Outros (${other[0].type}) — ${other.length} batalha${other.length>1?'s':''}</div>
+      <div class="war-section-title">${ic('flag')} Outros (${esc(other[0].type)}) — ${other.length} batalha${other.length>1?'s':''}</div>
       ${other.map((b,i)=>warBattleCard(b,i,'other')).join('')}
     </div>`
   }
@@ -383,12 +389,12 @@ function warBattleCard(b,idx,tipo){
       <div class="result-box ${r}">${l}</div>
       <div style="min-width:0">
         <div style="font-size:13px;font-weight:700;margin-bottom:2px">
-          ${typeIco} vs ${opName}
-          <span style="font-size:10px;color:var(--muted);font-family:monospace">${opTag}</span>
+          ${typeIco} vs ${esc(opName)}
+          <span style="font-size:10px;color:var(--muted);font-family:monospace">${esc(opTag)}</span>
         </div>
         <div style="font-size:11px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap">
           <span>${fmtDate(b.battleTime)}</span>
-          ${arena?`<span>${ic('arena')} ${arena}</span>`:''}
+          ${arena?`<span>${ic('arena')} ${esc(arena)}</span>`:''}
           ${myElixir?`<span><span class="elixir-dot"></span>${myElixir} elixir</span>`:''}
           ${myCards.length?`<span>🃏 ${myCards.length} cartas</span>`:''}
         </div>
@@ -412,7 +418,7 @@ function warBattleCard(b,idx,tipo){
             letter-spacing:.5px;margin-bottom:8px">🃏 Seu Deck ${myElixir?`<span style="color:#a855f7;margin-left:6px"><span class="elixir-dot"></span>${myElixir} elixir médio</span>`:''}
           </div>
           <div class="deck-grid">${myCards.map(c=>`<div class="deck-card">
-            <div class="deck-card-name">${c.name}</div>
+            <div class="deck-card-name">${esc(c.name)}</div>
             <div><span class="deck-card-lvl">Nv.${c.level||'?'}</span>
               ${c.elixirCost?`<span class="deck-card-elixir"> · ${c.elixirCost}${ic('droplet')}</span>`:''}</div>
           </div>`).join('')}</div>
@@ -423,7 +429,7 @@ function warBattleCard(b,idx,tipo){
             letter-spacing:.5px;margin-bottom:8px">🃏 Deck do Oponente ${opElixir?`<span style="color:#a855f7;margin-left:6px"><span class="elixir-dot"></span>${opElixir} elixir médio</span>`:''}
           </div>
           <div class="deck-grid">${opCards.map(c=>`<div class="deck-card">
-            <div class="deck-card-name">${c.name}</div>
+            <div class="deck-card-name">${esc(c.name)}</div>
             <div><span class="deck-card-lvl">Nv.${c.level||'?'}</span>
               ${c.elixirCost?`<span class="deck-card-elixir"> · ${c.elixirCost}${ic('droplet')}</span>`:''}</div>
           </div>`).join('')}</div>
@@ -601,7 +607,7 @@ function renderClan(c,members,warlog){
   $('ctInfo').innerHTML=`<div class="card">
     <div class="card-header"><span>${ic('chart')}</span><span class="card-title">Informações do Clã</span></div>
     <div class="card-body">${[
-      ['Tipo',typeLabel[c.type]||c.type],['Localização',c.location?`${ic('globe')} ${c.location.name}`:'—'],
+      ['Tipo',typeLabel[c.type]||esc(c.type)],['Localização',c.location?`${ic('globe')} ${esc(c.location.name)}`:'—'],
       ['Membros',`${ic('people')} ${c.members}/50`],['Pontuação',`${ic('trophy')} ${(c.clanScore||0).toLocaleString()}`],
       ['Troféus de Guerra',`${ic('anchor')} ${(c.clanWarTrophies||0).toLocaleString()}`],
       ['Doações/Semana',`${ic('gift')} ${(c.donationsPerWeek||0).toLocaleString()}`],
@@ -618,8 +624,8 @@ function renderClan(c,members,warlog){
       const rb=m.role==='leader'?'badge-gold':m.role==='coLeader'?'badge-blue':m.role==='elder'?'badge-green':'badge-gray'
       return `<div class="member-row">
         <div class="member-rank">${i+1}</div>
-        <div><div class="member-name">${m.name}</div><div class="member-tag">${m.tag}</div></div>
-        <div><span class="badge ${rb}" style="font-size:10px">${ROLES[m.role]||m.role}</span></div>
+        <div><div class="member-name">${esc(m.name)}</div><div class="member-tag">${esc(m.tag)}</div></div>
+        <div><span class="badge ${rb}" style="font-size:10px">${esc(ROLES[m.role]||m.role)}</span></div>
         <div class="member-trophies" style="color:${trophyColor(m.trophies)}">${ic('trophy')} ${(m.trophies||0).toLocaleString()}</div>
       </div>`}).join('')}</div></div>`
 
@@ -647,7 +653,7 @@ function renderClan(c,members,warlog){
             <tr ${x.clan?.tag===c.tag?'class="highlight"':''}>
               <td><span class="badge ${x.rank===1?'badge-gold':x.rank<=3?'badge-blue':'badge-gray'}" style="font-size:10px">
                 ${x.rank===1?ic('medal'):x.rank===2?ic('medal'):x.rank===3?ic('medal'):`#${x.rank}`}</span></td>
-              <td style="font-weight:${x.clan?.tag===c.tag?700:400}">${x.clan?.tag===c.tag?ic('star')+' ':''}${x.clan?.name||'—'}</td>
+              <td style="font-weight:${x.clan?.tag===c.tag?700:400}">${x.clan?.tag===c.tag?ic('star')+' ':''}${esc(x.clan?.name||'—')}</td>
               <td style="color:var(--gold);font-weight:700">${(x.clan?.fame||0).toLocaleString()}</td>
               <td style="color:var(--muted)">${x.clan?.participants?.length||0}</td>
             </tr>`).join('')}

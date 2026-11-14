@@ -18,3 +18,4 @@ desktop.ini
 .vscode/
 .idea/
 *.code-workspace
+.pytest_cache/
