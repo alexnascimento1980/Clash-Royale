@@ -17,7 +17,7 @@ frontend não precisa mudar nada):
 """
 import json
 from concurrent.futures import ThreadPoolExecutor
-from flask import Flask, request, jsonify, render_template, Response
+from flask import Flask, request, jsonify, render_template, Response, send_from_directory
 
 import config
 import cr_client
@@ -43,6 +43,13 @@ def _error_response(message, status=400):
 
 
 # ── rota principal ────────────────────────────────────────
+@app.route("/manifest.webmanifest")
+def manifest():
+    # Servido na raiz (e não em /static) para o escopo do app ser "/"
+    return send_from_directory(app.static_folder, "manifest.webmanifest",
+                               mimetype="application/manifest+json")
+
+
 @app.route("/")
 def index():
     return render_template("index.html")

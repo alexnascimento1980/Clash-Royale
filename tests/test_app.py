@@ -148,3 +148,17 @@ def test_safe_cell_keeps_numbers_and_text():
 
 def test_fmt_date():
     assert csv_export.fmt_date("20261114T182300.000Z") == "14/11/2026 18:23"
+
+
+# ── PWA ────────────────────────────────────────────────────
+def test_manifest_and_icons_are_served(client):
+    r = client.get("/manifest.webmanifest")
+    assert r.status_code == 200
+    assert r.mimetype == "application/manifest+json"
+    data = r.get_json()
+    assert data["short_name"] == "Sentinela"
+    assert {i["purpose"] for i in data["icons"]} == {"any", "maskable"}
+    for icon in data["icons"]:
+        assert client.get(icon["src"]).status_code == 200
+    html = client.get("/").data.decode()
+    assert 'rel="manifest"' in html and "apple-touch-icon" in html

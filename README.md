@@ -77,7 +77,9 @@ sentinela/
 │   └── index.html          # Estrutura da interface
 ├── static/
 │   ├── css/style.css
-│   └── js/app.js
+│   ├── js/app.js
+│   ├── manifest.webmanifest   # instalação como app (PWA)
+│   └── icons/                 # ícones (escudo com coroa) em SVG e PNG
 └── tests/
     └── test_app.py         # Testes do backend (sem acesso à rede)
 ```
@@ -118,6 +120,14 @@ Você verá no terminal:
 ```
 ✅ Sentinela rodando em http://localhost:5000
 ```
+
+### Instalar no celular
+
+O Sentinela pode ser instalado como app a partir do navegador, sem loja:
+- **Android (Chrome):** menu ⋮ → *Instalar app* (ou *Adicionar à tela inicial*)
+- **iPhone (Safari):** botão Compartilhar → *Adicionar à Tela de Início*
+
+Precisa de conexão: os dados vêm da API em tempo real, então não há modo offline.
 
 ### Testes
 
